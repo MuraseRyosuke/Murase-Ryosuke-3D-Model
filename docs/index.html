@@ -22,11 +22,25 @@
       transition: background-color 0.3s ease;
     }
 
+    /* カメラ映像バックグラウンド用 */
+    #cameraVideo {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      object-fit: cover;
+      z-index: 0;
+      display: none;
+    }
+
     model-viewer {
+      position: relative;
       width: 100%;
       height: 100%;
       --poster-color: transparent;
       transition: filter 0.3s ease;
+      z-index: 1;
     }
 
     /* ホログラムモード時の走査線オーバーレイ */
@@ -61,7 +75,7 @@
       align-items: center;
       gap: 6px;
       width: calc(100% - 24px);
-      max-width: 920px;
+      max-width: 960px;
       background: rgba(20, 20, 20, 0.85);
       padding: 10px 14px;
       border-radius: 20px;
@@ -184,6 +198,9 @@
 </head>
 <body>
 
+  <!-- リアカメラ映像要素 -->
+  <video id="cameraVideo" autoplay playsinline muted></video>
+
   <!-- ホログラム効果用エフェクトレイヤー -->
   <div id="holoOverlay" class="holo-overlay"></div>
 
@@ -198,7 +215,7 @@
 
     <div class="divider"></div>
 
-    <!-- 2. 表示モード切替（メッシュ追加） -->
+    <!-- 2. 表示モード切替 -->
     <div class="group" id="viewModeGroup">
       <button class="btn active" data-mode="normal">標準</button>
       <button class="btn" data-mode="solid">ソリッド</button>
@@ -208,7 +225,7 @@
 
     <div class="divider"></div>
 
-    <!-- 3. 回転コントロール（通常回転 ＆ 高速回転） -->
+    <!-- 3. 回転コントロール -->
     <div class="group">
       <button class="btn active" id="toggleRotateBtn" title="自動回転のON/OFF">🔄 回転</button>
       <button class="btn" id="fastRotateBtn" title="高速回転">🎠</button>
@@ -226,8 +243,10 @@
 
     <div class="divider"></div>
 
-    <!-- 5. 背景カスタマイズ -->
+    <!-- 5. 背景カスタマイズ（カメラ機能追加） -->
     <div class="group">
+      <button class="btn" id="cameraBtn" title="カメラ背景を取り込む">📷</button>
+
       <label class="btn color-picker-label" title="背景色を変更">
         🎨
         <input type="color" id="bgColorPicker" value="#666666">
@@ -242,7 +261,7 @@
     </div>
   </div>
 
-  <!-- 3Dビューワー -->
+  <!-- 3Dビューワー (ar, ar-modes 属性を追加してApple Quick Look/WebXR対応) -->
   <model-viewer 
     id="viewer"
     src="./murase_statue_bust_15k_standard.glb" 
@@ -252,7 +271,9 @@
     auto-rotate 
     rotation-per-second="30deg"
     camera-controls 
-    shadow-intensity="1">
+    shadow-intensity="1"
+    ar
+    ar-modes="webxr scene-viewer quick-look">
   </model-viewer>
 
   <!-- スクリプト制御 -->
@@ -264,6 +285,8 @@
     const toggleRotateBtn = document.getElementById('toggleRotateBtn');
     const fastRotateBtn = document.getElementById('fastRotateBtn');
     const scaleSlider = document.getElementById('scaleSlider');
+    const cameraBtn = document.getElementById('cameraBtn');
+    const cameraVideo = document.getElementById('cameraVideo');
     const bgColorPicker = document.getElementById('bgColorPicker');
     const bgImgInput = document.getElementById('bgImgInput');
     const resetBgBtn = document.getElementById('resetBgBtn');
@@ -274,9 +297,11 @@
 
     let currentMode = 'normal';
     let isFastRotating = false;
+    let cameraStream = null;
+    let isCameraActive = false;
     let originalMaterials = [];
 
-    // ワイヤーフレーム表示のON/OFF制御（Three.js シーン探索）
+    // ワイヤーフレーム表示のON/OFF制御
     function setWireframe(enable) {
       const symbols = Object.getOwnPropertySymbols(viewer);
       const sceneSymbol = symbols.find(s => s.description === 'scene') || Symbol.for('scene');
@@ -314,7 +339,6 @@
       currentMode = mode;
       if (!viewer.model) return;
 
-      // メッシュモード以外の時はワイヤーフレームを解除
       setWireframe(mode === 'mesh');
 
       const materials = viewer.model.materials;
@@ -355,12 +379,11 @@
           viewer.style.filter = 'drop-shadow(0 0 15px rgba(0, 229, 255, 0.75))';
 
         } else if (mode === 'mesh') {
-          // メッシュ（ワイヤーフレーム）表示スタイル
           mat.pbrMetallicRoughness.baseColorTexture.setTexture(null);
           mat.pbrMetallicRoughness.setBaseColorFactor([0.0, 1.0, 0.5, 1.0]);
           mat.pbrMetallicRoughness.setRoughnessFactor(0.1);
           mat.pbrMetallicRoughness.setMetallicFactor(0.1);
-          mat.setEmissiveFactor([0.0, 0.8, 0.4]); // ワイヤー線を明るく自己発光させる
+          mat.setEmissiveFactor([0.0, 0.8, 0.4]);
           mat.setAlphaMode('OPAQUE');
           holoOverlay.classList.remove('active');
           viewer.style.filter = 'none';
@@ -432,14 +455,54 @@
       viewer.scale = `${scale} ${scale} ${scale}`;
     });
 
-    // 6. 背景色変更
+    // 6. リアカメラ背景のオン/オフ処理
+    cameraBtn.addEventListener('click', async () => {
+      if (isCameraActive) {
+        stopCamera();
+      } else {
+        await startCamera();
+      }
+    });
+
+    async function startCamera() {
+      try {
+        cameraStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: 'environment' } },
+          audio: false
+        });
+        cameraVideo.srcObject = cameraStream;
+        cameraVideo.style.display = 'block';
+        document.body.style.backgroundColor = 'transparent';
+        document.body.style.backgroundImage = 'none';
+        cameraBtn.classList.add('active');
+        isCameraActive = true;
+      } catch (err) {
+        alert('カメラの起動に失敗しました。アクセス権限を確認してください。');
+        console.error(err);
+      }
+    }
+
+    function stopCamera() {
+      if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
+        cameraStream = null;
+      }
+      cameraVideo.style.display = 'none';
+      document.body.style.backgroundColor = bgColorPicker.value;
+      cameraBtn.classList.remove('active');
+      isCameraActive = false;
+    }
+
+    // 7. 背景色変更
     bgColorPicker.addEventListener('input', (e) => {
+      stopCamera();
       document.body.style.backgroundImage = 'none';
       document.body.style.backgroundColor = e.target.value;
     });
 
-    // 7. 背景画像読み込み
+    // 8. 背景画像読み込み
     bgImgInput.addEventListener('change', (e) => {
+      stopCamera();
       const file = e.target.files[0];
       if (file) {
         const imageUrl = URL.createObjectURL(file);
@@ -447,8 +510,9 @@
       }
     });
 
-    // 8. リセット
+    // 9. リセット
     resetBgBtn.addEventListener('click', () => {
+      stopCamera();
       document.body.style.backgroundImage = 'none';
       document.body.style.backgroundColor = '#666666';
       bgColorPicker.value = '#666666';
