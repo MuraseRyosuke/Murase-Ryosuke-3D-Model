@@ -26,6 +26,27 @@
       width: 100%;
       height: 100%;
       --poster-color: transparent;
+      transition: filter 0.3s ease;
+    }
+
+    /* ホログラムモード時の走査線オーバーレイ */
+    .holo-overlay {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none;
+      background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 240, 255, 0.08) 0px,
+        rgba(0, 240, 255, 0.08) 1px,
+        transparent 1px,
+        transparent 4px
+      );
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      z-index: 5;
+    }
+    .holo-overlay.active {
+      opacity: 1;
     }
 
     /* 下部コントロールパネル（レスポンシブ対応） */
@@ -38,9 +59,9 @@
       flex-wrap: wrap;
       justify-content: center;
       align-items: center;
-      gap: 10px;
-      width: calc(100% - 32px);
-      max-width: 720px;
+      gap: 8px;
+      width: calc(100% - 24px);
+      max-width: 820px;
       background: rgba(20, 20, 20, 0.85);
       padding: 10px 14px;
       border-radius: 20px;
@@ -53,12 +74,12 @@
     .group {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 4px;
     }
 
     .divider {
       width: 1px;
-      height: 20px;
+      height: 18px;
       background-color: rgba(255, 255, 255, 0.2);
     }
 
@@ -66,10 +87,10 @@
       background: transparent;
       color: #ccc;
       border: none;
-      padding: 6px 12px;
-      border-radius: 14px;
+      padding: 5px 10px;
+      border-radius: 12px;
       cursor: pointer;
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 500;
       transition: all 0.2s ease;
       white-space: nowrap;
@@ -93,15 +114,15 @@
     /* スライダー調整 */
     .scale-label {
       color: #ccc;
-      font-size: 12px;
+      font-size: 11px;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 4px;
       white-space: nowrap;
     }
 
     .scale-slider {
-      width: 75px;
+      width: 65px;
       accent-color: #2563eb;
       cursor: pointer;
     }
@@ -127,27 +148,30 @@
     }
 
     /* モバイル向け最適化 */
-    @media (max-width: 480px) {
+    @media (max-width: 520px) {
       .controls-panel {
-        bottom: 12px;
-        padding: 8px 10px;
-        gap: 8px;
+        bottom: 10px;
+        padding: 8px;
+        gap: 6px;
         border-radius: 16px;
       }
       .divider {
         display: none;
       }
       .btn {
-        padding: 5px 10px;
-        font-size: 11px;
+        padding: 4px 8px;
+        font-size: 10px;
       }
       .scale-slider {
-        width: 60px;
+        width: 55px;
       }
     }
   </style>
 </head>
 <body>
+
+  <!-- ホログラム効果用エフェクトレイヤー -->
+  <div id="holoOverlay" class="holo-overlay"></div>
 
   <!-- コントロールパネル -->
   <div class="controls-panel">
@@ -160,40 +184,49 @@
 
     <div class="divider"></div>
 
-    <!-- 2. 自動回転ON/OFF -->
+    <!-- 2. 表示モード切替 (新規追加) -->
+    <div class="group" id="viewModeGroup">
+      <button class="btn active" data-mode="normal">標準</button>
+      <button class="btn" data-mode="solid">ソリッド</button>
+      <button class="btn" data-mode="hologram">ホログラム</button>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- 3. 自動回転ON/OFF -->
     <div class="group">
       <button class="btn active" id="toggleRotateBtn" title="自動回転のON/OFF">🔄 回転</button>
     </div>
 
     <div class="divider"></div>
 
-    <!-- 3. モデルサイズ調整 -->
+    <!-- 4. モデルサイズ調整 -->
     <div class="group">
       <label class="scale-label">
-        📏 サイズ
+        📏
         <input type="range" id="scaleSlider" class="scale-slider" min="0.1" max="1.5" step="0.05" value="0.5">
       </label>
     </div>
 
     <div class="divider"></div>
 
-    <!-- 4. 背景カスタマイズ -->
+    <!-- 5. 背景カスタマイズ -->
     <div class="group">
       <label class="btn color-picker-label" title="背景色を変更">
-        🎨 色
+        🎨
         <input type="color" id="bgColorPicker" value="#666666">
       </label>
 
       <label class="btn" title="背景画像を読み込む">
-        🖼️ 画像
+        🖼️
         <input type="file" id="bgImgInput" accept="image/*">
       </label>
 
-      <button class="btn" id="resetBgBtn" title="既定の状態に戻す">↺ リセット</button>
+      <button class="btn" id="resetBgBtn" title="既定の状態に戻す">↺</button>
     </div>
   </div>
 
-  <!-- 3Dビューワー（初期カメラ位置: 90deg で正面補正） -->
+  <!-- 3Dビューワー -->
   <model-viewer 
     id="viewer"
     src="./murase_statue_bust_15k_standard.glb" 
@@ -209,6 +242,8 @@
   <script>
     const viewer = document.getElementById('viewer');
     const modelButtons = document.querySelectorAll('.controls-panel .group:first-child .btn');
+    const modeButtons = document.querySelectorAll('#viewModeGroup .btn');
+    const holoOverlay = document.getElementById('holoOverlay');
     const toggleRotateBtn = document.getElementById('toggleRotateBtn');
     const scaleSlider = document.getElementById('scaleSlider');
     const bgColorPicker = document.getElementById('bgColorPicker');
@@ -216,8 +251,79 @@
     const resetBgBtn = document.getElementById('resetBgBtn');
 
     const DEFAULT_SCALE = 0.5;
+    let currentMode = 'normal';
+    let originalMaterials = [];
 
-    // 1. モデル切替
+    // 元のマテリアル状態を保存
+    function cacheOriginalMaterials() {
+      if (!viewer.model) return;
+      originalMaterials = viewer.model.materials.map(mat => {
+        return {
+          baseColorFactor: [...mat.pbrMetallicRoughness.baseColorFactor],
+          baseColorTexture: mat.pbrMetallicRoughness.baseColorTexture.texture,
+          roughnessFactor: mat.pbrMetallicRoughness.roughnessFactor,
+          metallicFactor: mat.pbrMetallicRoughness.metallicFactor,
+          emissiveFactor: [...mat.emissiveFactor],
+          alphaMode: mat.alphaMode
+        };
+      });
+    }
+
+    // 表示モードの切り替え実行関数
+    function applyViewMode(mode) {
+      currentMode = mode;
+      if (!viewer.model) return;
+
+      const materials = viewer.model.materials;
+
+      materials.forEach((mat, idx) => {
+        const orig = originalMaterials[idx];
+
+        if (mode === 'normal') {
+          // 1. 標準表示
+          if (orig) {
+            mat.pbrMetallicRoughness.setBaseColorFactor(orig.baseColorFactor);
+            mat.pbrMetallicRoughness.baseColorTexture.setTexture(orig.baseColorTexture);
+            mat.pbrMetallicRoughness.setRoughnessFactor(orig.roughnessFactor);
+            mat.pbrMetallicRoughness.setMetallicFactor(orig.metallicFactor);
+            mat.setEmissiveFactor(orig.emissiveFactor);
+            mat.setAlphaMode(orig.alphaMode);
+          }
+          holoOverlay.classList.remove('active');
+          viewer.style.filter = 'none';
+
+        } else if (mode === 'solid') {
+          // 2. ソリッド（無彩色・クレイ）表示
+          mat.pbrMetallicRoughness.baseColorTexture.setTexture(null);
+          mat.pbrMetallicRoughness.setBaseColorFactor([0.85, 0.85, 0.85, 1.0]);
+          mat.pbrMetallicRoughness.setRoughnessFactor(0.5);
+          mat.pbrMetallicRoughness.setMetallicFactor(0.1);
+          mat.setEmissiveFactor([0, 0, 0]);
+          mat.setAlphaMode('OPAQUE');
+          holoOverlay.classList.remove('active');
+          viewer.style.filter = 'none';
+
+        } else if (mode === 'hologram') {
+          // 3. ホログラム表示
+          mat.pbrMetallicRoughness.baseColorTexture.setTexture(null);
+          mat.pbrMetallicRoughness.setBaseColorFactor([0.0, 0.8, 1.0, 0.5]); // シアン＋半透明
+          mat.pbrMetallicRoughness.setRoughnessFactor(0.2);
+          mat.pbrMetallicRoughness.setMetallicFactor(0.8);
+          mat.setEmissiveFactor([0.0, 0.6, 1.0]); // 発光
+          mat.setAlphaMode('BLEND');
+          holoOverlay.classList.add('active');
+          viewer.style.filter = 'drop-shadow(0 0 15px rgba(0, 229, 255, 0.75))';
+        }
+      });
+    }
+
+    // モデル読み込み完了時のイベント制御
+    viewer.addEventListener('load', () => {
+      cacheOriginalMaterials();
+      applyViewMode(currentMode);
+    });
+
+    // 1. ポリゴン数切替
     modelButtons.forEach(btn => {
       btn.addEventListener('click', () => {
         modelButtons.forEach(b => b.classList.remove('active'));
@@ -226,7 +332,16 @@
       });
     });
 
-    // 2. 自動回転のトグル処理
+    // 2. 表示モードボタンイベント
+    modeButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        modeButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        applyViewMode(btn.getAttribute('data-mode'));
+      });
+    });
+
+    // 3. 自動回転トグル
     toggleRotateBtn.addEventListener('click', () => {
       if (viewer.hasAttribute('auto-rotate')) {
         viewer.removeAttribute('auto-rotate');
@@ -237,19 +352,19 @@
       }
     });
 
-    // 3. モデルサイズ（スケール）調整
+    // 4. サイズ（スケール）調整
     scaleSlider.addEventListener('input', (e) => {
       const scale = e.target.value;
       viewer.scale = `${scale} ${scale} ${scale}`;
     });
 
-    // 4. 背景色変更
+    // 5. 背景色変更
     bgColorPicker.addEventListener('input', (e) => {
       document.body.style.backgroundImage = 'none';
       document.body.style.backgroundColor = e.target.value;
     });
 
-    // 5. 背景画像読み込み
+    // 6. 背景画像読み込み
     bgImgInput.addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (file) {
@@ -258,7 +373,7 @@
       }
     });
 
-    // 6. リセット（背景・サイズ・回転を初期状態に戻す）
+    // 7. リセット
     resetBgBtn.addEventListener('click', () => {
       document.body.style.backgroundImage = 'none';
       document.body.style.backgroundColor = '#666666';
@@ -268,12 +383,14 @@
       scaleSlider.value = DEFAULT_SCALE;
       viewer.scale = `${DEFAULT_SCALE} ${DEFAULT_SCALE} ${DEFAULT_SCALE}`;
 
-      // 自動回転をONに戻す
       viewer.setAttribute('auto-rotate', '');
       toggleRotateBtn.classList.add('active');
-
-      // カメラ角度を時計回り90度の正面に戻す
       viewer.cameraOrbit = '90deg 75deg auto';
+
+      // 表示モードを「標準」に戻す
+      modeButtons.forEach(b => b.classList.remove('active'));
+      modeButtons[0].classList.add('active');
+      applyViewMode('normal');
     });
   </script>
 </body>
