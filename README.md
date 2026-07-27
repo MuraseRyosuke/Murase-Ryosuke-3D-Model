@@ -1,22 +1,22 @@
-# 🗿 村瀨亮介の石膏像 3Dモデル (Murase Ryosuke's 3D Statue Model)
+# 🗿 村瀨亮介 3Dモデルライブラリ (Murase Ryosuke's 3D Model Package)
 
-村瀨亮介が制作・提供する汎用3D石膏像アセットパッケージです。**Tripo AI** を用いて3Dスキャン・生成したモデルをベースに調整を施しており、VRChat向けアバター、ゲーム用プロップ、各種CGレンダリング素材としてご自由にお使いいただけます。
+村瀨亮介が制作・提供する汎用3Dアセットパッケージです。オブジェクト・プロップ素材から、キャラクター・人物アバターまで幅広く展開していきます。VRChat、ゲーム開発、各種CGコンテンツ制作にご活用ください。
 
 ---
 
 ## 🌐 3D View (ブラウザプレビュー)
 
-ブラウザ上で3Dモデルを360度回転・拡大して事前に確認できます。
+ブラウザ上で3Dモデルを360度回転・拡大して確認できます。
 
-👉 **[Webブラウザで3Dモデルをプレビューする](https://MuraseRyosuke.github.io/Murase-Ryosuke-3D-Statue-Model/)**
+👉 **[Webブラウザで3Dモデルをプレビューする](https://MuraseRyosuke.github.io/Murase-Ryosuke-3D-Model/)**
 
 ---
 
 ## 📦 同梱データ仕様 (Package Details)
 
-現在は **胸像（Bust）モデル** を収録しています。（※全身モデルも順次追加予定です）
+### 🗿 石膏胸像モデル (`/models/statue_bust/`)
 
-### 🗿 胸像モデル (`/models/bust/`)
+Tripo AIを用いて制作した汎用石膏胸像データです。用途に合わせてポリゴン数・形式を選択できます。
 
 | ファイル名 | ポリゴン数 (Tris) | 推奨用途 | フォーマット |
 | :--- | :--- | :--- | :--- |
@@ -24,11 +24,13 @@
 | `murase_statue_bust_15k_standard.*` | 約 15,000 | VRChat (Generic/Poorランク最適化)、ゲーム制作 | GLB, FBX, OBJ |
 | `murase_statue_bust_500p_low.*` | 約 500 | 背景オブジェクト、モバイル環境、LOD | GLB, FBX, OBJ |
 
+*(※全身モデル・追加アセットも本リポジトリにて順次展開予定です)*
+
 ---
 
 ## 🛠️ 制作環境・ベース技術 (Technologies & Tools)
 
-* **Base Generation:** [Tripo AI](https://www.tripo3d.ai/) (3D Scan / AI Generation)
+* **Base Generation:** [Tripo AI](https://www.tripo3d.ai/)
 * **Optimization & Cleanup:** Blender / Unity
 
 ---
@@ -36,7 +38,7 @@
 ## 📥 利用・ダウンロード方法
 
 1. **個別ファイル取得:**  
-   リポジトリ内の `/models/bust/` ディレクトリから、用途に応じたポリゴン数・拡張子のファイルを直接ダウンロードしてください。
+   リポジトリ内の `/models/` 以下の各ディレクトリから、必要なファイルを直接ダウンロードしてください。
 2. **一括取得:**  
    ページ右上の **[Code]** ボタン ➔ **[Download ZIP]** から全フォーマットを一元取得できます。
 
