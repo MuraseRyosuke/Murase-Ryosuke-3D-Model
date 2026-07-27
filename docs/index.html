@@ -13,49 +13,70 @@
       padding: 0;
       width: 100vw;
       height: 100vh;
-      background-color: #1a1a1a;
+      background-color: #666666; /* 既定の背景色 */
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       overflow: hidden;
+      transition: background-color 0.3s ease;
     }
 
     model-viewer {
       width: 100%;
       height: 100%;
+      --poster-color: transparent;
     }
 
-    /* 上部モデル切り替えUI */
+    /* 上部コントロールパネル */
     .controls-panel {
       position: absolute;
       top: 20px;
       left: 50%;
       transform: translateX(-50%);
       display: flex;
-      gap: 6px;
-      background: rgba(30, 30, 30, 0.8);
-      padding: 6px 8px;
-      border-radius: 24px;
+      align-items: center;
+      gap: 12px;
+      background: rgba(20, 20, 20, 0.75);
+      padding: 8px 16px;
+      border-radius: 30px;
       backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
       z-index: 10;
+    }
+
+    .group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .divider {
+      width: 1px;
+      height: 20px;
+      background-color: rgba(255, 255, 255, 0.2);
     }
 
     .btn {
       background: transparent;
-      color: #aaa;
+      color: #ccc;
       border: none;
-      padding: 8px 16px;
+      padding: 6px 14px;
       border-radius: 18px;
       cursor: pointer;
       font-size: 13px;
       font-weight: 500;
       transition: all 0.2s ease;
       white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
     }
 
     .btn:hover {
       color: #fff;
-      background: rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.12);
     }
 
     .btn.active {
@@ -64,15 +85,59 @@
       font-weight: 600;
       box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
     }
+
+    /* カラーピッカーの装飾 */
+    .color-picker-label {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .color-picker-label input[type="color"] {
+      position: absolute;
+      top: -10px;
+      left: -10px;
+      width: 50px;
+      height: 50px;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    /* 非表示のファイル入力 */
+    input[type="file"] {
+      display: none;
+    }
   </style>
 </head>
 <body>
 
-  <!-- 切り替えボタン -->
+  <!-- コントロールパネル -->
   <div class="controls-panel">
-    <button class="btn" data-src="./murase_statue_bust_500p_low.glb">500p (Low)</button>
-    <button class="btn active" data-src="./murase_statue_bust_15k_standard.glb">15k (Standard)</button>
-    <button class="btn" data-src="./murase_statue_bust_70k_raw.glb">70k (High)</button>
+    <!-- モデル精度切り替え -->
+    <div class="group">
+      <button class="btn" data-src="./murase_statue_bust_500p_low.glb">500p</button>
+      <button class="btn active" data-src="./murase_statue_bust_15k_standard.glb">15k</button>
+      <button class="btn" data-src="./murase_statue_bust_70k_raw.glb">70k</button>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- 背景カスタマイズ -->
+    <div class="group">
+      <!-- 色選択ボタン -->
+      <label class="btn color-picker-label" title="背景色を変更">
+        🎨 色
+        <input type="color" id="bgColorPicker" value="#666666">
+      </label>
+
+      <!-- 画像アップロードボタン -->
+      <label class="btn" title="背景画像を読み込む">
+        🖼️ 画像
+        <input type="file" id="bgImgInput" accept="image/*">
+      </label>
+
+      <!-- 背景リセットボタン -->
+      <button class="btn" id="resetBgBtn" title="既定の背景（#666666）に戻す">↺ リセット</button>
+    </div>
   </div>
 
   <!-- 3Dビューワー -->
@@ -88,18 +153,41 @@
   <!-- スクリプト制御 -->
   <script>
     const viewer = document.getElementById('viewer');
-    const buttons = document.querySelectorAll('.btn');
+    const modelButtons = document.querySelectorAll('.controls-panel .group:first-child .btn');
+    const bgColorPicker = document.getElementById('bgColorPicker');
+    const bgImgInput = document.getElementById('bgImgInput');
+    const resetBgBtn = document.getElementById('resetBgBtn');
 
-    buttons.forEach(btn => {
+    // 1. モデル切替処理
+    modelButtons.forEach(btn => {
       btn.addEventListener('click', () => {
-        // アクティブ表示の切り替え
-        buttons.forEach(b => b.classList.remove('active'));
+        modelButtons.forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-
-        // モデルの切り替え
-        const newSrc = btn.getAttribute('data-src');
-        viewer.src = newSrc;
+        viewer.src = btn.getAttribute('data-src');
       });
+    });
+
+    // 2. 背景色変更処理
+    bgColorPicker.addEventListener('input', (e) => {
+      document.body.style.backgroundImage = 'none'; // 画像を解除
+      document.body.style.backgroundColor = e.target.value;
+    });
+
+    // 3. 背景画像読み込み処理
+    bgImgInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const imageUrl = URL.createObjectURL(file);
+        document.body.style.backgroundImage = `url("${imageUrl}")`;
+      }
+    });
+
+    // 4. 背景リセット処理 (#666666 に戻す)
+    resetBgBtn.addEventListener('click', () => {
+      document.body.style.backgroundImage = 'none';
+      document.body.style.backgroundColor = '#666666';
+      bgColorPicker.value = '#666666';
+      bgImgInput.value = ''; // ファイル選択をクリア
     });
   </script>
 </body>
