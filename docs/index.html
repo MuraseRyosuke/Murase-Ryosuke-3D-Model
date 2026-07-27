@@ -28,18 +28,22 @@
       --poster-color: transparent;
     }
 
-    /* 上部コントロールパネル */
+    /* 下部コントロールパネル（見切れ防止・レスポンシブ） */
     .controls-panel {
       position: absolute;
-      top: 20px;
+      bottom: 20px;
       left: 50%;
       transform: translateX(-50%);
       display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
       align-items: center;
-      gap: 12px;
-      background: rgba(20, 20, 20, 0.75);
-      padding: 8px 16px;
-      border-radius: 30px;
+      gap: 10px;
+      width: calc(100% - 32px);
+      max-width: 640px;
+      background: rgba(20, 20, 20, 0.85);
+      padding: 10px 14px;
+      border-radius: 20px;
       backdrop-filter: blur(12px);
       border: 1px solid rgba(255, 255, 255, 0.15);
       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
@@ -62,16 +66,16 @@
       background: transparent;
       color: #ccc;
       border: none;
-      padding: 6px 14px;
-      border-radius: 18px;
+      padding: 6px 12px;
+      border-radius: 14px;
       cursor: pointer;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 500;
       transition: all 0.2s ease;
       white-space: nowrap;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 4px;
     }
 
     .btn:hover {
@@ -84,6 +88,22 @@
       background: #2563eb;
       font-weight: 600;
       box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
+    }
+
+    /* スライダー調整 */
+    .scale-label {
+      color: #ccc;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .scale-slider {
+      width: 80px;
+      accent-color: #2563eb;
+      cursor: pointer;
     }
 
     /* カラーピッカーの装飾 */
@@ -102,17 +122,36 @@
       cursor: pointer;
     }
 
-    /* 非表示のファイル入力 */
     input[type="file"] {
       display: none;
+    }
+
+    /* モバイル向け最適化 */
+    @media (max-width: 480px) {
+      .controls-panel {
+        bottom: 12px;
+        padding: 8px 10px;
+        gap: 8px;
+        border-radius: 16px;
+      }
+      .divider {
+        display: none; /* スマホでは区切り線を消して自然に折り返し */
+      }
+      .btn {
+        padding: 5px 10px;
+        font-size: 11px;
+      }
+      .scale-slider {
+        width: 65px;
+      }
     }
   </style>
 </head>
 <body>
 
-  <!-- コントロールパネル -->
+  <!-- コントロールパネル（画面下部・レスポンシブ） -->
   <div class="controls-panel">
-    <!-- モデル精度切り替え -->
+    <!-- 1. ポリゴン数切替 -->
     <div class="group">
       <button class="btn" data-src="./murase_statue_bust_500p_low.glb">500p</button>
       <button class="btn active" data-src="./murase_statue_bust_15k_standard.glb">15k</button>
@@ -121,30 +160,38 @@
 
     <div class="divider"></div>
 
-    <!-- 背景カスタマイズ -->
+    <!-- 2. モデルサイズ調整 -->
     <div class="group">
-      <!-- 色選択ボタン -->
+      <label class="scale-label">
+        📏 サイズ
+        <input type="range" id="scaleSlider" class="scale-slider" min="0.1" max="1.5" step="0.05" value="0.5">
+      </label>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- 3. 背景カスタマイズ -->
+    <div class="group">
       <label class="btn color-picker-label" title="背景色を変更">
         🎨 色
         <input type="color" id="bgColorPicker" value="#666666">
       </label>
 
-      <!-- 画像アップロードボタン -->
       <label class="btn" title="背景画像を読み込む">
         🖼️ 画像
         <input type="file" id="bgImgInput" accept="image/*">
       </label>
 
-      <!-- 背景リセットボタン -->
-      <button class="btn" id="resetBgBtn" title="既定の背景（#666666）に戻す">↺ リセット</button>
+      <button class="btn" id="resetBgBtn" title="既定の状態に戻す">↺ リセット</button>
     </div>
   </div>
 
-  <!-- 3Dビューワー -->
+  <!-- 3Dビューワー（初期サイズを小さめの 0.5 に設定） -->
   <model-viewer 
     id="viewer"
     src="./murase_statue_bust_15k_standard.glb" 
     alt="村瀨亮介 3D Model Preview" 
+    scale="0.5 0.5 0.5"
     auto-rotate 
     camera-controls 
     shadow-intensity="1">
@@ -154,11 +201,14 @@
   <script>
     const viewer = document.getElementById('viewer');
     const modelButtons = document.querySelectorAll('.controls-panel .group:first-child .btn');
+    const scaleSlider = document.getElementById('scaleSlider');
     const bgColorPicker = document.getElementById('bgColorPicker');
     const bgImgInput = document.getElementById('bgImgInput');
     const resetBgBtn = document.getElementById('resetBgBtn');
 
-    // 1. モデル切替処理
+    const DEFAULT_SCALE = 0.5;
+
+    // 1. モデル切替
     modelButtons.forEach(btn => {
       btn.addEventListener('click', () => {
         modelButtons.forEach(b => b.classList.remove('active'));
@@ -167,13 +217,19 @@
       });
     });
 
-    // 2. 背景色変更処理
+    // 2. モデルサイズ（スケール）調整
+    scaleSlider.addEventListener('input', (e) => {
+      const scale = e.target.value;
+      viewer.scale = `${scale} ${scale} ${scale}`;
+    });
+
+    // 3. 背景色変更
     bgColorPicker.addEventListener('input', (e) => {
-      document.body.style.backgroundImage = 'none'; // 画像を解除
+      document.body.style.backgroundImage = 'none';
       document.body.style.backgroundColor = e.target.value;
     });
 
-    // 3. 背景画像読み込み処理
+    // 4. 背景画像読み込み
     bgImgInput.addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (file) {
@@ -182,12 +238,15 @@
       }
     });
 
-    // 4. 背景リセット処理 (#666666 に戻す)
+    // 5. リセット（背景・サイズを既定値に戻す）
     resetBgBtn.addEventListener('click', () => {
       document.body.style.backgroundImage = 'none';
       document.body.style.backgroundColor = '#666666';
       bgColorPicker.value = '#666666';
-      bgImgInput.value = ''; // ファイル選択をクリア
+      bgImgInput.value = '';
+
+      scaleSlider.value = DEFAULT_SCALE;
+      viewer.scale = `${DEFAULT_SCALE} ${DEFAULT_SCALE} ${DEFAULT_SCALE}`;
     });
   </script>
 </body>
