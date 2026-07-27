@@ -61,7 +61,7 @@
       align-items: center;
       gap: 6px;
       width: calc(100% - 24px);
-      max-width: 880px;
+      max-width: 920px;
       background: rgba(20, 20, 20, 0.85);
       padding: 10px 14px;
       border-radius: 20px;
@@ -198,11 +198,12 @@
 
     <div class="divider"></div>
 
-    <!-- 2. 表示モード切替 -->
+    <!-- 2. 表示モード切替（メッシュ追加） -->
     <div class="group" id="viewModeGroup">
       <button class="btn active" data-mode="normal">標準</button>
       <button class="btn" data-mode="solid">ソリッド</button>
       <button class="btn" data-mode="hologram">ホログラム</button>
+      <button class="btn" data-mode="mesh">メッシュ</button>
     </div>
 
     <div class="divider"></div>
@@ -269,11 +270,29 @@
 
     const DEFAULT_SCALE = 0.5;
     const NORMAL_SPEED = '30deg';
-    const FAST_SPEED = '1440deg'; // 1秒間に4回転
+    const FAST_SPEED = '1440deg';
 
     let currentMode = 'normal';
     let isFastRotating = false;
     let originalMaterials = [];
+
+    // ワイヤーフレーム表示のON/OFF制御（Three.js シーン探索）
+    function setWireframe(enable) {
+      const symbols = Object.getOwnPropertySymbols(viewer);
+      const sceneSymbol = symbols.find(s => s.description === 'scene') || Symbol.for('scene');
+      const scene = viewer[sceneSymbol];
+      if (scene) {
+        scene.traverse((node) => {
+          if (node.isMesh && node.material) {
+            if (Array.isArray(node.material)) {
+              node.material.forEach(m => { m.wireframe = enable; });
+            } else {
+              node.material.wireframe = enable;
+            }
+          }
+        });
+      }
+    }
 
     // 元のマテリアル状態を保存
     function cacheOriginalMaterials() {
@@ -294,6 +313,9 @@
     function applyViewMode(mode) {
       currentMode = mode;
       if (!viewer.model) return;
+
+      // メッシュモード以外の時はワイヤーフレームを解除
+      setWireframe(mode === 'mesh');
 
       const materials = viewer.model.materials;
 
@@ -331,6 +353,17 @@
           mat.setAlphaMode('BLEND');
           holoOverlay.classList.add('active');
           viewer.style.filter = 'drop-shadow(0 0 15px rgba(0, 229, 255, 0.75))';
+
+        } else if (mode === 'mesh') {
+          // メッシュ（ワイヤーフレーム）表示スタイル
+          mat.pbrMetallicRoughness.baseColorTexture.setTexture(null);
+          mat.pbrMetallicRoughness.setBaseColorFactor([0.0, 1.0, 0.5, 1.0]);
+          mat.pbrMetallicRoughness.setRoughnessFactor(0.1);
+          mat.pbrMetallicRoughness.setMetallicFactor(0.1);
+          mat.setEmissiveFactor([0.0, 0.8, 0.4]); // ワイヤー線を明るく自己発光させる
+          mat.setAlphaMode('OPAQUE');
+          holoOverlay.classList.remove('active');
+          viewer.style.filter = 'none';
         }
       });
     }
