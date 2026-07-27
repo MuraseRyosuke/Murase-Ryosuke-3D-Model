@@ -28,7 +28,7 @@
       --poster-color: transparent;
     }
 
-    /* 下部コントロールパネル（見切れ防止・レスポンシブ） */
+    /* 下部コントロールパネル（レスポンシブ対応） */
     .controls-panel {
       position: absolute;
       bottom: 20px;
@@ -40,7 +40,7 @@
       align-items: center;
       gap: 10px;
       width: calc(100% - 32px);
-      max-width: 640px;
+      max-width: 720px;
       background: rgba(20, 20, 20, 0.85);
       padding: 10px 14px;
       border-radius: 20px;
@@ -101,7 +101,7 @@
     }
 
     .scale-slider {
-      width: 80px;
+      width: 75px;
       accent-color: #2563eb;
       cursor: pointer;
     }
@@ -135,21 +135,21 @@
         border-radius: 16px;
       }
       .divider {
-        display: none; /* スマホでは区切り線を消して自然に折り返し */
+        display: none;
       }
       .btn {
         padding: 5px 10px;
         font-size: 11px;
       }
       .scale-slider {
-        width: 65px;
+        width: 60px;
       }
     }
   </style>
 </head>
 <body>
 
-  <!-- コントロールパネル（画面下部・レスポンシブ） -->
+  <!-- コントロールパネル -->
   <div class="controls-panel">
     <!-- 1. ポリゴン数切替 -->
     <div class="group">
@@ -160,7 +160,14 @@
 
     <div class="divider"></div>
 
-    <!-- 2. モデルサイズ調整 -->
+    <!-- 2. 自動回転ON/OFF -->
+    <div class="group">
+      <button class="btn active" id="toggleRotateBtn" title="自動回転のON/OFF">🔄 回転</button>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- 3. モデルサイズ調整 -->
     <div class="group">
       <label class="scale-label">
         📏 サイズ
@@ -170,7 +177,7 @@
 
     <div class="divider"></div>
 
-    <!-- 3. 背景カスタマイズ -->
+    <!-- 4. 背景カスタマイズ -->
     <div class="group">
       <label class="btn color-picker-label" title="背景色を変更">
         🎨 色
@@ -186,12 +193,13 @@
     </div>
   </div>
 
-  <!-- 3Dビューワー（初期サイズを小さめの 0.5 に設定） -->
+  <!-- 3Dビューワー（初期カメラ位置: 90deg で正面補正） -->
   <model-viewer 
     id="viewer"
     src="./murase_statue_bust_15k_standard.glb" 
     alt="村瀨亮介 3D Model Preview" 
     scale="0.5 0.5 0.5"
+    camera-orbit="90deg 75deg auto"
     auto-rotate 
     camera-controls 
     shadow-intensity="1">
@@ -201,6 +209,7 @@
   <script>
     const viewer = document.getElementById('viewer');
     const modelButtons = document.querySelectorAll('.controls-panel .group:first-child .btn');
+    const toggleRotateBtn = document.getElementById('toggleRotateBtn');
     const scaleSlider = document.getElementById('scaleSlider');
     const bgColorPicker = document.getElementById('bgColorPicker');
     const bgImgInput = document.getElementById('bgImgInput');
@@ -217,19 +226,30 @@
       });
     });
 
-    // 2. モデルサイズ（スケール）調整
+    // 2. 自動回転のトグル処理
+    toggleRotateBtn.addEventListener('click', () => {
+      if (viewer.hasAttribute('auto-rotate')) {
+        viewer.removeAttribute('auto-rotate');
+        toggleRotateBtn.classList.remove('active');
+      } else {
+        viewer.setAttribute('auto-rotate', '');
+        toggleRotateBtn.classList.add('active');
+      }
+    });
+
+    // 3. モデルサイズ（スケール）調整
     scaleSlider.addEventListener('input', (e) => {
       const scale = e.target.value;
       viewer.scale = `${scale} ${scale} ${scale}`;
     });
 
-    // 3. 背景色変更
+    // 4. 背景色変更
     bgColorPicker.addEventListener('input', (e) => {
       document.body.style.backgroundImage = 'none';
       document.body.style.backgroundColor = e.target.value;
     });
 
-    // 4. 背景画像読み込み
+    // 5. 背景画像読み込み
     bgImgInput.addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (file) {
@@ -238,7 +258,7 @@
       }
     });
 
-    // 5. リセット（背景・サイズを既定値に戻す）
+    // 6. リセット（背景・サイズ・回転を初期状態に戻す）
     resetBgBtn.addEventListener('click', () => {
       document.body.style.backgroundImage = 'none';
       document.body.style.backgroundColor = '#666666';
@@ -247,6 +267,13 @@
 
       scaleSlider.value = DEFAULT_SCALE;
       viewer.scale = `${DEFAULT_SCALE} ${DEFAULT_SCALE} ${DEFAULT_SCALE}`;
+
+      // 自動回転をONに戻す
+      viewer.setAttribute('auto-rotate', '');
+      toggleRotateBtn.classList.add('active');
+
+      // カメラ角度を時計回り90度の正面に戻す
+      viewer.cameraOrbit = '90deg 75deg auto';
     });
   </script>
 </body>
