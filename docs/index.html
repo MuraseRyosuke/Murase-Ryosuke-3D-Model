@@ -59,9 +59,9 @@
       flex-wrap: wrap;
       justify-content: center;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       width: calc(100% - 24px);
-      max-width: 820px;
+      max-width: 880px;
       background: rgba(20, 20, 20, 0.85);
       padding: 10px 14px;
       border-radius: 20px;
@@ -111,6 +111,20 @@
       box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
     }
 
+    /* 高速回転ボタンアクティブ時 */
+    .btn.fast-active {
+      color: #fff;
+      background: #e11d48;
+      font-weight: 600;
+      box-shadow: 0 2px 12px rgba(225, 29, 72, 0.6);
+      animation: pulse 1s infinite alternate;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      100% { transform: scale(1.05); }
+    }
+
     /* スライダー調整 */
     .scale-label {
       color: #ccc;
@@ -122,7 +136,7 @@
     }
 
     .scale-slider {
-      width: 65px;
+      width: 60px;
       accent-color: #2563eb;
       cursor: pointer;
     }
@@ -152,18 +166,18 @@
       .controls-panel {
         bottom: 10px;
         padding: 8px;
-        gap: 6px;
+        gap: 5px;
         border-radius: 16px;
       }
       .divider {
         display: none;
       }
       .btn {
-        padding: 4px 8px;
+        padding: 4px 7px;
         font-size: 10px;
       }
       .scale-slider {
-        width: 55px;
+        width: 50px;
       }
     }
   </style>
@@ -184,7 +198,7 @@
 
     <div class="divider"></div>
 
-    <!-- 2. 表示モード切替 (新規追加) -->
+    <!-- 2. 表示モード切替 -->
     <div class="group" id="viewModeGroup">
       <button class="btn active" data-mode="normal">標準</button>
       <button class="btn" data-mode="solid">ソリッド</button>
@@ -193,9 +207,10 @@
 
     <div class="divider"></div>
 
-    <!-- 3. 自動回転ON/OFF -->
+    <!-- 3. 回転コントロール（通常回転 ＆ 高速回転） -->
     <div class="group">
       <button class="btn active" id="toggleRotateBtn" title="自動回転のON/OFF">🔄 回転</button>
+      <button class="btn" id="fastRotateBtn" title="高速回転">🎠</button>
     </div>
 
     <div class="divider"></div>
@@ -234,6 +249,7 @@
     scale="0.5 0.5 0.5"
     camera-orbit="90deg 75deg auto"
     auto-rotate 
+    rotation-per-second="30deg"
     camera-controls 
     shadow-intensity="1">
   </model-viewer>
@@ -245,13 +261,18 @@
     const modeButtons = document.querySelectorAll('#viewModeGroup .btn');
     const holoOverlay = document.getElementById('holoOverlay');
     const toggleRotateBtn = document.getElementById('toggleRotateBtn');
+    const fastRotateBtn = document.getElementById('fastRotateBtn');
     const scaleSlider = document.getElementById('scaleSlider');
     const bgColorPicker = document.getElementById('bgColorPicker');
     const bgImgInput = document.getElementById('bgImgInput');
     const resetBgBtn = document.getElementById('resetBgBtn');
 
     const DEFAULT_SCALE = 0.5;
+    const NORMAL_SPEED = '30deg';
+    const FAST_SPEED = '1440deg'; // 1秒間に4回転
+
     let currentMode = 'normal';
+    let isFastRotating = false;
     let originalMaterials = [];
 
     // 元のマテリアル状態を保存
@@ -269,7 +290,7 @@
       });
     }
 
-    // 表示モードの切り替え実行関数
+    // 表示モードの切り替え実行
     function applyViewMode(mode) {
       currentMode = mode;
       if (!viewer.model) return;
@@ -280,7 +301,6 @@
         const orig = originalMaterials[idx];
 
         if (mode === 'normal') {
-          // 1. 標準表示
           if (orig) {
             mat.pbrMetallicRoughness.setBaseColorFactor(orig.baseColorFactor);
             mat.pbrMetallicRoughness.baseColorTexture.setTexture(orig.baseColorTexture);
@@ -293,7 +313,6 @@
           viewer.style.filter = 'none';
 
         } else if (mode === 'solid') {
-          // 2. ソリッド（無彩色・クレイ）表示
           mat.pbrMetallicRoughness.baseColorTexture.setTexture(null);
           mat.pbrMetallicRoughness.setBaseColorFactor([0.85, 0.85, 0.85, 1.0]);
           mat.pbrMetallicRoughness.setRoughnessFactor(0.5);
@@ -304,12 +323,11 @@
           viewer.style.filter = 'none';
 
         } else if (mode === 'hologram') {
-          // 3. ホログラム表示
           mat.pbrMetallicRoughness.baseColorTexture.setTexture(null);
-          mat.pbrMetallicRoughness.setBaseColorFactor([0.0, 0.8, 1.0, 0.5]); // シアン＋半透明
+          mat.pbrMetallicRoughness.setBaseColorFactor([0.0, 0.8, 1.0, 0.5]);
           mat.pbrMetallicRoughness.setRoughnessFactor(0.2);
           mat.pbrMetallicRoughness.setMetallicFactor(0.8);
-          mat.setEmissiveFactor([0.0, 0.6, 1.0]); // 発光
+          mat.setEmissiveFactor([0.0, 0.6, 1.0]);
           mat.setAlphaMode('BLEND');
           holoOverlay.classList.add('active');
           viewer.style.filter = 'drop-shadow(0 0 15px rgba(0, 229, 255, 0.75))';
@@ -317,7 +335,6 @@
       });
     }
 
-    // モデル読み込み完了時のイベント制御
     viewer.addEventListener('load', () => {
       cacheOriginalMaterials();
       applyViewMode(currentMode);
@@ -332,7 +349,7 @@
       });
     });
 
-    // 2. 表示モードボタンイベント
+    // 2. 表示モード切替
     modeButtons.forEach(btn => {
       btn.addEventListener('click', () => {
         modeButtons.forEach(b => b.classList.remove('active'));
@@ -341,30 +358,54 @@
       });
     });
 
-    // 3. 自動回転トグル
+    // 3. 通常回転トグル
     toggleRotateBtn.addEventListener('click', () => {
       if (viewer.hasAttribute('auto-rotate')) {
         viewer.removeAttribute('auto-rotate');
         toggleRotateBtn.classList.remove('active');
+        if (isFastRotating) stopFastRotate();
       } else {
         viewer.setAttribute('auto-rotate', '');
         toggleRotateBtn.classList.add('active');
       }
     });
 
-    // 4. サイズ（スケール）調整
+    // 4. 高速回転トグル（🎠）
+    fastRotateBtn.addEventListener('click', () => {
+      if (isFastRotating) {
+        stopFastRotate();
+      } else {
+        startFastRotate();
+      }
+    });
+
+    function startFastRotate() {
+      isFastRotating = true;
+      viewer.setAttribute('auto-rotate', '');
+      viewer.setAttribute('rotation-per-second', FAST_SPEED);
+      fastRotateBtn.classList.add('fast-active');
+      toggleRotateBtn.classList.add('active');
+    }
+
+    function stopFastRotate() {
+      isFastRotating = false;
+      viewer.setAttribute('rotation-per-second', NORMAL_SPEED);
+      fastRotateBtn.classList.remove('fast-active');
+    }
+
+    // 5. サイズ調整
     scaleSlider.addEventListener('input', (e) => {
       const scale = e.target.value;
       viewer.scale = `${scale} ${scale} ${scale}`;
     });
 
-    // 5. 背景色変更
+    // 6. 背景色変更
     bgColorPicker.addEventListener('input', (e) => {
       document.body.style.backgroundImage = 'none';
       document.body.style.backgroundColor = e.target.value;
     });
 
-    // 6. 背景画像読み込み
+    // 7. 背景画像読み込み
     bgImgInput.addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (file) {
@@ -373,7 +414,7 @@
       }
     });
 
-    // 7. リセット
+    // 8. リセット
     resetBgBtn.addEventListener('click', () => {
       document.body.style.backgroundImage = 'none';
       document.body.style.backgroundColor = '#666666';
@@ -383,11 +424,11 @@
       scaleSlider.value = DEFAULT_SCALE;
       viewer.scale = `${DEFAULT_SCALE} ${DEFAULT_SCALE} ${DEFAULT_SCALE}`;
 
+      stopFastRotate();
       viewer.setAttribute('auto-rotate', '');
       toggleRotateBtn.classList.add('active');
       viewer.cameraOrbit = '90deg 75deg auto';
 
-      // 表示モードを「標準」に戻す
       modeButtons.forEach(b => b.classList.remove('active'));
       modeButtons[0].classList.add('active');
       applyViewMode('normal');
