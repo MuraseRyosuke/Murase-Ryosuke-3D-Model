@@ -23,7 +23,7 @@
       user-select: none;
     }
 
-    /* カメラ映像バックグラウンド用 */
+    /* リアカメラ映像要素 */
     #cameraVideo {
       position: fixed;
       top: 0;
@@ -64,7 +64,7 @@
       opacity: 1;
     }
 
-    /* 下部コントロールパネル（スタイリッシュ・ダークグラスUI） */
+    /* 下部コントロールパネル（クリーン＆ミニマル・ダークグラスUI） */
     .controls-panel {
       position: absolute;
       bottom: 20px;
@@ -76,7 +76,7 @@
       align-items: center;
       gap: 6px;
       width: calc(100% - 24px);
-      max-width: 1020px;
+      max-width: 860px;
       background: rgba(15, 18, 24, 0.85);
       padding: 10px 16px;
       border-radius: 20px;
@@ -95,7 +95,7 @@
 
     .divider {
       width: 1px;
-      height: 20px;
+      height: 18px;
       background-color: rgba(255, 255, 255, 0.15);
       margin: 0 2px;
     }
@@ -104,7 +104,7 @@
       background: rgba(255, 255, 255, 0.04);
       color: #d1d5db;
       border: 1px solid rgba(255, 255, 255, 0.08);
-      padding: 6px 10px;
+      padding: 6px 11px;
       border-radius: 10px;
       cursor: pointer;
       font-size: 11px;
@@ -113,7 +113,7 @@
       white-space: nowrap;
       display: inline-flex;
       align-items: center;
-      gap: 5px;
+      gap: 4px;
     }
 
     .btn:hover {
@@ -145,25 +145,6 @@
       100% { transform: scale(1.05); }
     }
 
-    /* キーボードショートカット用キーバッジ */
-    .kbd {
-      display: inline-block;
-      padding: 1px 4px;
-      font-size: 9px;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      color: rgba(255, 255, 255, 0.6);
-      background: rgba(0, 0, 0, 0.4);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 4px;
-      line-height: 1;
-    }
-
-    .btn.active .kbd, .btn.fast-active .kbd {
-      color: #ffffff;
-      background: rgba(255, 255, 255, 0.2);
-      border-color: rgba(255, 255, 255, 0.4);
-    }
-
     /* スライダー調整 */
     .scale-label {
       color: #d1d5db;
@@ -175,19 +156,9 @@
     }
 
     .scale-slider {
-      width: 60px;
+      width: 65px;
       accent-color: #2563eb;
       cursor: pointer;
-    }
-
-    /* WASD / 矢印ガイド */
-    .wasd-hint {
-      color: rgba(255, 255, 255, 0.5);
-      font-size: 10px;
-      display: flex;
-      align-items: center;
-      gap: 3px;
-      padding: 0 4px;
     }
 
     /* カラーピッカーの装飾 */
@@ -214,19 +185,19 @@
     @media (max-width: 600px) {
       .controls-panel {
         bottom: 10px;
-        padding: 8px;
+        padding: 8px 10px;
         gap: 4px;
         border-radius: 16px;
       }
-      .divider, .wasd-hint {
+      .divider {
         display: none;
       }
       .btn {
-        padding: 4px 6px;
+        padding: 5px 8px;
         font-size: 10px;
       }
       .scale-slider {
-        width: 45px;
+        width: 50px;
       }
     }
   </style>
@@ -243,38 +214,36 @@
   <div class="controls-panel">
     <!-- 1. ポリゴン数切替 -->
     <div class="group">
-      <button class="btn" data-src="./murase_statue_bust_500p_low.glb">500p <span class="kbd">1</span></button>
-      <button class="btn active" data-src="./murase_statue_bust_15k_standard.glb">15k <span class="kbd">2</span></button>
-      <button class="btn" data-src="./murase_statue_bust_70k_raw.glb">70k <span class="kbd">3</span></button>
+      <button class="btn" data-src="./murase_statue_bust_500p_low.glb">500p</button>
+      <button class="btn active" data-src="./murase_statue_bust_15k_standard.glb">15k</button>
+      <button class="btn" data-src="./murase_statue_bust_70k_raw.glb">70k</button>
     </div>
 
     <div class="divider"></div>
 
     <!-- 2. 表示モード切替 -->
     <div class="group" id="viewModeGroup">
-      <button class="btn active" data-mode="normal">標準 <span class="kbd">N</span></button>
-      <button class="btn" data-mode="solid">ソリッド <span class="kbd">R</span></button>
-      <button class="btn" data-mode="hologram">ホロ <span class="kbd">H</span></button>
-      <button class="btn" data-mode="mesh">メッシュ <span class="kbd">M</span></button>
+      <button class="btn active" data-mode="normal">標準</button>
+      <button class="btn" data-mode="solid">ソリッド</button>
+      <button class="btn" data-mode="hologram">ホロ</button>
+      <button class="btn" data-mode="mesh">メッシュ</button>
     </div>
 
     <div class="divider"></div>
 
     <!-- 3. 回転コントロール -->
     <div class="group">
-      <button class="btn active" id="toggleRotateBtn" title="自動回転 ON/OFF">回転 <span class="kbd">L</span></button>
-      <button class="btn" id="fastRotateBtn" title="高速回転">🎠 <span class="kbd">C</span></button>
+      <button class="btn active" id="toggleRotateBtn" title="自動回転 ON/OFF">回転</button>
+      <button class="btn" id="fastRotateBtn" title="高速回転">🎠</button>
     </div>
 
     <div class="divider"></div>
 
-    <!-- 4. 位置操作ガイド (WASD: 前後左右 / ↑↓: 上下) & スケール -->
+    <!-- 4. モデルサイズ調整 -->
     <div class="group">
-      <div class="wasd-hint" title="WASD: 前後左右 / ↑↓: 上下移動">🎯 <span class="kbd">WASD</span><span class="kbd">↑↓</span></div>
       <label class="scale-label" title="拡大・縮小">
         📏
         <input type="range" id="scaleSlider" class="scale-slider" min="0.1" max="1.5" step="0.05" value="0.5">
-        <span class="kbd">+/-</span>
       </label>
     </div>
 
@@ -285,16 +254,16 @@
       <button class="btn" id="cameraBtn" title="カメラ背景を取り込む">📷</button>
 
       <label class="btn color-picker-label" title="背景色を変更">
-        🎨 <span class="kbd">B</span>
+        🎨
         <input type="color" id="bgColorPicker" value="#666666">
       </label>
 
       <label class="btn" title="背景画像を読み込む">
-        🖼️ <span class="kbd">P</span>
+        🖼️
         <input type="file" id="bgImgInput" accept="image/*">
       </label>
 
-      <button class="btn" id="resetBgBtn" title="既定の状態に戻す">↺ <span class="kbd">Q</span></button>
+      <button class="btn" id="resetBgBtn" title="既定の状態に戻す">↺</button>
     </div>
   </div>
 
@@ -349,18 +318,23 @@
       viewer.cameraTarget = `${posX.toFixed(2)}m ${posY.toFixed(2)}m ${posZ.toFixed(2)}m`;
     }
 
-    // ワイヤーフレーム表示制御
-    function setWireframe(enable) {
+    // カリング（画面外消去）無効化 ＆ ワイヤーフレーム表示制御
+    function configureSceneNodes(isMeshMode) {
       const symbols = Object.getOwnPropertySymbols(viewer);
       const sceneSymbol = symbols.find(s => s.description === 'scene') || Symbol.for('scene');
       const scene = viewer[sceneSymbol];
       if (scene) {
         scene.traverse((node) => {
-          if (node.isMesh && node.material) {
-            if (Array.isArray(node.material)) {
-              node.material.forEach(m => { m.wireframe = enable; });
-            } else {
-              node.material.wireframe = enable;
+          if (node.isMesh) {
+            // 遠くに配置しても消えないように視界カリングを無効化
+            node.frustumCulled = false;
+
+            if (node.material) {
+              if (Array.isArray(node.material)) {
+                node.material.forEach(m => { m.wireframe = isMeshMode; });
+              } else {
+                node.material.wireframe = isMeshMode;
+              }
             }
           }
         });
@@ -387,7 +361,7 @@
       currentMode = mode;
       if (!viewer.model) return;
 
-      setWireframe(mode === 'mesh');
+      configureSceneNodes(mode === 'mesh');
 
       const materials = viewer.model.materials;
 
@@ -592,17 +566,16 @@
 
     resetBgBtn.addEventListener('click', resetAll);
 
-    // 10. キーボードショートカットハンドラ
+    // 10. シークレット・キーボードショートカットハンドラ（非表示機能）
     window.addEventListener('keydown', (e) => {
       if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
 
       const key = e.key.toLowerCase();
 
-      // カメラ角度のリアルタイム取得（カメラ基準の前後左右計算）
+      // カメラ視点に連動した 3D WASD 移動（前後左右）
       const orbit = viewer.getCameraOrbit();
       const theta = orbit ? orbit.theta : Math.PI / 2;
 
-      // WASD: 前後左右（カメラ向いている方向基準）
       if (key === 'w') {
         posX += Math.sin(theta) * MOVE_STEP;
         posZ += Math.cos(theta) * MOVE_STEP;
