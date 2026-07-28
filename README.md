@@ -6,13 +6,39 @@
 
 ## 🌐 3D View (ブラウザプレビュー)
 
-ブラウザ上で3Dモデルを360度回転・拡大して確認できます。
+ブラウザ上で3Dモデルを360度回転・拡大し、インタラクティブに確認できます。
 
 👉 **[Webブラウザで3Dモデルをプレビューする](https://MuraseRyosuke.github.io/Murase-Ryosuke-3D-Model/)**
+
+### プレビュー機能
+* **表示モード切替:** 標準 / ソリッド / ホログラム / メッシュ（ワイヤーフレーム）
+* **回転・サイズ調整:** 自動回転 / 高速回転（🎠）/ 無段階スケール変更
+* **背景カスタマイズ:** 背景色変更 / 背景画像設定 / **リアカメラ映像取り込み（パススルー）**
+* **AR対応:** Apple AR Quick Look (iOS) / WebXR (Android) による現実空間へのAR配置
+* **ダイレクトDL:** 表示中のモデル（.glb）を画面上から直接ダウンロード
+
+### ⌨️ キーボードショートカット (PC環境向け)
+* **3D位置移動 (前後左右):** `W` `A` `S` `D`
+* **高さ移動 (上下):** `↑` `↓`
+* **ポリゴン精度:** `1` (500p) / `2` (15k) / `3` (70k)
+* **表示モード:** `N` (標準) / `R` (ソリッド) / `H` (ホログラム) / `M` (メッシュ)
+* **回転制御:** `L` (通常回転) / `C` (高速回転)
+* **スケール調整:** `+` / `-`
+* **環境・背景:** `B` (色選択) / `P` (画像選択) / `Q` (初期化リセット)
 
 ---
 
 ## 📦 同梱データ仕様 (Package Details)
+
+Murase-Ryosuke-3D-Model/
+├── models/
+│   └── statue_bust/
+│       ├── murase_statue_bust_500p_low.glb / .fbx / .obj
+│       ├── murase_statue_bust_15k_standard.glb / .fbx / .obj
+│       └── murase_statue_bust_70k_raw.glb / .fbx / .obj
+└── docs/
+    ├── index.html        # プレビュービューワー
+    └── favicon.ico       # ファビコン
 
 ### 🗿 石膏胸像モデル (`/models/statue_bust/`)
 
@@ -32,14 +58,17 @@ Tripo AIを用いて制作した汎用石膏胸像データです。用途に合
 
 * **Base Generation:** [Tripo AI](https://www.tripo3d.ai/)
 * **Optimization & Cleanup:** Blender / Unity
+* **Web Viewer:** Google model-viewer (WebXR / Three.js)
 
 ---
 
 ## 📥 利用・ダウンロード方法
 
-1. **個別ファイル取得:**  
-   リポジトリ内の `/models/` 以下の各ディレクトリから、必要なファイルを直接ダウンロードしてください。
-2. **一括取得:**  
+1. **Web画面からダウンロード:**  
+   [Webプレビュー](https://MuraseRyosuke.github.io/Murase-Ryosuke-3D-Model/) 上の「📥 DL」ボタンから、現在表示しているモデルの `.glb` データをワンタップで保存できます。
+2. **個別ファイル取得:**  
+   リポジトリ内の `/models/` 以下の各ディレクトリから、必要な形式（FBX, OBJ等）を直接ダウンロードしてください。
+3. **一括取得:**  
    ページ右上の **[Code]** ボタン ➔ **[Download ZIP]** から全フォーマットを一元取得できます。
 
 ---
