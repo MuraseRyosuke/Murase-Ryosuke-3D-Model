@@ -20,6 +20,7 @@
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       overflow: hidden;
       transition: background-color 0.3s ease;
+      user-select: none;
     }
 
     /* カメラ映像バックグラウンド用 */
@@ -63,7 +64,7 @@
       opacity: 1;
     }
 
-    /* 下部コントロールパネル（レスポンシブ対応） */
+    /* 下部コントロールパネル（スタイリッシュ・ダークグラスUI） */
     .controls-panel {
       position: absolute;
       bottom: 20px;
@@ -75,13 +76,14 @@
       align-items: center;
       gap: 6px;
       width: calc(100% - 24px);
-      max-width: 960px;
-      background: rgba(20, 20, 20, 0.85);
-      padding: 10px 14px;
+      max-width: 1020px;
+      background: rgba(15, 18, 24, 0.85);
+      padding: 10px 16px;
       border-radius: 20px;
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
       z-index: 10;
     }
 
@@ -93,44 +95,48 @@
 
     .divider {
       width: 1px;
-      height: 18px;
-      background-color: rgba(255, 255, 255, 0.2);
+      height: 20px;
+      background-color: rgba(255, 255, 255, 0.15);
+      margin: 0 2px;
     }
 
     .btn {
-      background: transparent;
-      color: #ccc;
-      border: none;
-      padding: 5px 10px;
-      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.04);
+      color: #d1d5db;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 6px 10px;
+      border-radius: 10px;
       cursor: pointer;
       font-size: 11px;
       font-weight: 500;
-      transition: all 0.2s ease;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
       white-space: nowrap;
       display: inline-flex;
       align-items: center;
-      gap: 4px;
+      gap: 5px;
     }
 
     .btn:hover {
-      color: #fff;
+      color: #ffffff;
       background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.25);
     }
 
     .btn.active {
-      color: #fff;
+      color: #ffffff;
       background: #2563eb;
+      border-color: #3b82f6;
       font-weight: 600;
-      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
+      box-shadow: 0 0 12px rgba(37, 99, 235, 0.5);
     }
 
     /* 高速回転ボタンアクティブ時 */
     .btn.fast-active {
-      color: #fff;
+      color: #ffffff;
       background: #e11d48;
+      border-color: #f43f5e;
       font-weight: 600;
-      box-shadow: 0 2px 12px rgba(225, 29, 72, 0.6);
+      box-shadow: 0 0 16px rgba(225, 29, 72, 0.7);
       animation: pulse 1s infinite alternate;
     }
 
@@ -139,13 +145,32 @@
       100% { transform: scale(1.05); }
     }
 
+    /* キーボードショートカット用キーバッジ */
+    .kbd {
+      display: inline-block;
+      padding: 1px 4px;
+      font-size: 9px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      color: rgba(255, 255, 255, 0.6);
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 4px;
+      line-height: 1;
+    }
+
+    .btn.active .kbd, .btn.fast-active .kbd {
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.2);
+      border-color: rgba(255, 255, 255, 0.4);
+    }
+
     /* スライダー調整 */
     .scale-label {
-      color: #ccc;
+      color: #d1d5db;
       font-size: 11px;
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: 5px;
       white-space: nowrap;
     }
 
@@ -153,6 +178,16 @@
       width: 60px;
       accent-color: #2563eb;
       cursor: pointer;
+    }
+
+    /* WASD / 矢印ガイド */
+    .wasd-hint {
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 10px;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      padding: 0 4px;
     }
 
     /* カラーピッカーの装飾 */
@@ -176,22 +211,22 @@
     }
 
     /* モバイル向け最適化 */
-    @media (max-width: 520px) {
+    @media (max-width: 600px) {
       .controls-panel {
         bottom: 10px;
         padding: 8px;
-        gap: 5px;
+        gap: 4px;
         border-radius: 16px;
       }
-      .divider {
+      .divider, .wasd-hint {
         display: none;
       }
       .btn {
-        padding: 4px 7px;
+        padding: 4px 6px;
         font-size: 10px;
       }
       .scale-slider {
-        width: 50px;
+        width: 45px;
       }
     }
   </style>
@@ -208,66 +243,69 @@
   <div class="controls-panel">
     <!-- 1. ポリゴン数切替 -->
     <div class="group">
-      <button class="btn" data-src="./murase_statue_bust_500p_low.glb">500p</button>
-      <button class="btn active" data-src="./murase_statue_bust_15k_standard.glb">15k</button>
-      <button class="btn" data-src="./murase_statue_bust_70k_raw.glb">70k</button>
+      <button class="btn" data-src="./murase_statue_bust_500p_low.glb">500p <span class="kbd">1</span></button>
+      <button class="btn active" data-src="./murase_statue_bust_15k_standard.glb">15k <span class="kbd">2</span></button>
+      <button class="btn" data-src="./murase_statue_bust_70k_raw.glb">70k <span class="kbd">3</span></button>
     </div>
 
     <div class="divider"></div>
 
     <!-- 2. 表示モード切替 -->
     <div class="group" id="viewModeGroup">
-      <button class="btn active" data-mode="normal">標準</button>
-      <button class="btn" data-mode="solid">ソリッド</button>
-      <button class="btn" data-mode="hologram">ホログラム</button>
-      <button class="btn" data-mode="mesh">メッシュ</button>
+      <button class="btn active" data-mode="normal">標準 <span class="kbd">N</span></button>
+      <button class="btn" data-mode="solid">ソリッド <span class="kbd">R</span></button>
+      <button class="btn" data-mode="hologram">ホロ <span class="kbd">H</span></button>
+      <button class="btn" data-mode="mesh">メッシュ <span class="kbd">M</span></button>
     </div>
 
     <div class="divider"></div>
 
     <!-- 3. 回転コントロール -->
     <div class="group">
-      <button class="btn active" id="toggleRotateBtn" title="自動回転のON/OFF">🔄 回転</button>
-      <button class="btn" id="fastRotateBtn" title="高速回転">🎠</button>
+      <button class="btn active" id="toggleRotateBtn" title="自動回転 ON/OFF">回転 <span class="kbd">L</span></button>
+      <button class="btn" id="fastRotateBtn" title="高速回転">🎠 <span class="kbd">C</span></button>
     </div>
 
     <div class="divider"></div>
 
-    <!-- 4. モデルサイズ調整 -->
+    <!-- 4. 位置操作ガイド (WASD: 前後左右 / ↑↓: 上下) & スケール -->
     <div class="group">
-      <label class="scale-label">
+      <div class="wasd-hint" title="WASD: 前後左右 / ↑↓: 上下移動">🎯 <span class="kbd">WASD</span><span class="kbd">↑↓</span></div>
+      <label class="scale-label" title="拡大・縮小">
         📏
         <input type="range" id="scaleSlider" class="scale-slider" min="0.1" max="1.5" step="0.05" value="0.5">
+        <span class="kbd">+/-</span>
       </label>
     </div>
 
     <div class="divider"></div>
 
-    <!-- 5. 背景カスタマイズ（カメラ機能追加） -->
+    <!-- 5. 背景カスタマイズ -->
     <div class="group">
       <button class="btn" id="cameraBtn" title="カメラ背景を取り込む">📷</button>
 
       <label class="btn color-picker-label" title="背景色を変更">
-        🎨
+        🎨 <span class="kbd">B</span>
         <input type="color" id="bgColorPicker" value="#666666">
       </label>
 
       <label class="btn" title="背景画像を読み込む">
-        🖼️
+        🖼️ <span class="kbd">P</span>
         <input type="file" id="bgImgInput" accept="image/*">
       </label>
 
-      <button class="btn" id="resetBgBtn" title="既定の状態に戻す">↺</button>
+      <button class="btn" id="resetBgBtn" title="既定の状態に戻す">↺ <span class="kbd">Q</span></button>
     </div>
   </div>
 
-  <!-- 3Dビューワー (ar, ar-modes 属性を追加してApple Quick Look/WebXR対応) -->
+  <!-- 3Dビューワー -->
   <model-viewer 
     id="viewer"
     src="./murase_statue_bust_15k_standard.glb" 
     alt="村瀨亮介 3D Model Preview" 
     scale="0.5 0.5 0.5"
     camera-orbit="90deg 75deg auto"
+    camera-target="0m 0m 0m"
     auto-rotate 
     rotation-per-second="30deg"
     camera-controls 
@@ -301,7 +339,17 @@
     let isCameraActive = false;
     let originalMaterials = [];
 
-    // ワイヤーフレーム表示のON/OFF制御
+    // 位置（カメラターゲット）オフセット用変数 (メートル単位)
+    let posX = 0;
+    let posY = 0;
+    let posZ = 0;
+    const MOVE_STEP = 0.05;
+
+    function updateCameraTarget() {
+      viewer.cameraTarget = `${posX.toFixed(2)}m ${posY.toFixed(2)}m ${posZ.toFixed(2)}m`;
+    }
+
+    // ワイヤーフレーム表示制御
     function setWireframe(enable) {
       const symbols = Object.getOwnPropertySymbols(viewer);
       const sceneSymbol = symbols.find(s => s.description === 'scene') || Symbol.for('scene');
@@ -319,7 +367,7 @@
       }
     }
 
-    // 元のマテリアル状態を保存
+    // 元のマテリアル保存
     function cacheOriginalMaterials() {
       if (!viewer.model) return;
       originalMaterials = viewer.model.materials.map(mat => {
@@ -334,7 +382,7 @@
       });
     }
 
-    // 表示モードの切り替え実行
+    // 表示モード切り替え
     function applyViewMode(mode) {
       currentMode = mode;
       if (!viewer.model) return;
@@ -397,21 +445,32 @@
     });
 
     // 1. ポリゴン数切替
-    modelButtons.forEach(btn => {
-      btn.addEventListener('click', () => {
+    function selectModelIndex(index) {
+      if (modelButtons[index]) {
         modelButtons.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        viewer.src = btn.getAttribute('data-src');
-      });
+        modelButtons[index].classList.add('active');
+        viewer.src = modelButtons[index].getAttribute('data-src');
+      }
+    }
+
+    modelButtons.forEach((btn, idx) => {
+      btn.addEventListener('click', () => selectModelIndex(idx));
     });
 
     // 2. 表示モード切替
-    modeButtons.forEach(btn => {
-      btn.addEventListener('click', () => {
-        modeButtons.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        applyViewMode(btn.getAttribute('data-mode'));
+    function selectMode(mode) {
+      modeButtons.forEach(b => {
+        if (b.getAttribute('data-mode') === mode) {
+          b.classList.add('active');
+        } else {
+          b.classList.remove('active');
+        }
       });
+      applyViewMode(mode);
+    }
+
+    modeButtons.forEach(btn => {
+      btn.addEventListener('click', () => selectMode(btn.getAttribute('data-mode')));
     });
 
     // 3. 通常回転トグル
@@ -428,11 +487,8 @@
 
     // 4. 高速回転トグル（🎠）
     fastRotateBtn.addEventListener('click', () => {
-      if (isFastRotating) {
-        stopFastRotate();
-      } else {
-        startFastRotate();
-      }
+      if (isFastRotating) stopFastRotate();
+      else startFastRotate();
     });
 
     function startFastRotate() {
@@ -449,19 +505,21 @@
       fastRotateBtn.classList.remove('fast-active');
     }
 
-    // 5. サイズ調整
+    // 5. スケール（サイズ）調整
+    function setScaleValue(val) {
+      const clamped = Math.min(Math.max(val, 0.1), 1.5);
+      scaleSlider.value = clamped;
+      viewer.scale = `${clamped} ${clamped} ${clamped}`;
+    }
+
     scaleSlider.addEventListener('input', (e) => {
-      const scale = e.target.value;
-      viewer.scale = `${scale} ${scale} ${scale}`;
+      setScaleValue(parseFloat(e.target.value));
     });
 
-    // 6. リアカメラ背景のオン/オフ処理
+    // 6. リアカメラ背景
     cameraBtn.addEventListener('click', async () => {
-      if (isCameraActive) {
-        stopCamera();
-      } else {
-        await startCamera();
-      }
+      if (isCameraActive) stopCamera();
+      else await startCamera();
     });
 
     async function startCamera() {
@@ -477,8 +535,7 @@
         cameraBtn.classList.add('active');
         isCameraActive = true;
       } catch (err) {
-        alert('カメラの起動に失敗しました。アクセス権限を確認してください。');
-        console.error(err);
+        alert('カメラの起動に失敗しました。');
       }
     }
 
@@ -511,24 +568,95 @@
     });
 
     // 9. リセット
-    resetBgBtn.addEventListener('click', () => {
+    function resetAll() {
       stopCamera();
       document.body.style.backgroundImage = 'none';
       document.body.style.backgroundColor = '#666666';
       bgColorPicker.value = '#666666';
       bgImgInput.value = '';
 
-      scaleSlider.value = DEFAULT_SCALE;
-      viewer.scale = `${DEFAULT_SCALE} ${DEFAULT_SCALE} ${DEFAULT_SCALE}`;
+      setScaleValue(DEFAULT_SCALE);
+
+      posX = 0;
+      posY = 0;
+      posZ = 0;
+      viewer.cameraTarget = 'auto auto auto';
 
       stopFastRotate();
       viewer.setAttribute('auto-rotate', '');
       toggleRotateBtn.classList.add('active');
       viewer.cameraOrbit = '90deg 75deg auto';
 
-      modeButtons.forEach(b => b.classList.remove('active'));
-      modeButtons[0].classList.add('active');
-      applyViewMode('normal');
+      selectMode('normal');
+    }
+
+    resetBgBtn.addEventListener('click', resetAll);
+
+    // 10. キーボードショートカットハンドラ
+    window.addEventListener('keydown', (e) => {
+      if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+
+      const key = e.key.toLowerCase();
+
+      // カメラ角度のリアルタイム取得（カメラ基準の前後左右計算）
+      const orbit = viewer.getCameraOrbit();
+      const theta = orbit ? orbit.theta : Math.PI / 2;
+
+      // WASD: 前後左右（カメラ向いている方向基準）
+      if (key === 'w') {
+        posX += Math.sin(theta) * MOVE_STEP;
+        posZ += Math.cos(theta) * MOVE_STEP;
+        updateCameraTarget();
+      }
+      if (key === 's') {
+        posX -= Math.sin(theta) * MOVE_STEP;
+        posZ -= Math.cos(theta) * MOVE_STEP;
+        updateCameraTarget();
+      }
+      if (key === 'a') {
+        posX += Math.cos(theta) * MOVE_STEP;
+        posZ -= Math.sin(theta) * MOVE_STEP;
+        updateCameraTarget();
+      }
+      if (key === 'd') {
+        posX -= Math.cos(theta) * MOVE_STEP;
+        posZ += Math.sin(theta) * MOVE_STEP;
+        updateCameraTarget();
+      }
+
+      // ↑↓: 上下移動
+      if (e.key === 'ArrowUp') {
+        posY -= MOVE_STEP;
+        updateCameraTarget();
+      }
+      if (e.key === 'ArrowDown') {
+        posY += MOVE_STEP;
+        updateCameraTarget();
+      }
+
+      // ポリゴン精度 (1, 2, 3)
+      if (key === '1') selectModelIndex(0);
+      if (key === '2') selectModelIndex(1);
+      if (key === '3') selectModelIndex(2);
+
+      // 表示モード (n, r, h, m)
+      if (key === 'n') selectMode('normal');
+      if (key === 'r') selectMode('solid');
+      if (key === 'h') selectMode('hologram');
+      if (key === 'm') selectMode('mesh');
+
+      // 回転 (l, c)
+      if (key === 'l') toggleRotateBtn.click();
+      if (key === 'c') fastRotateBtn.click();
+
+      // 拡大 / 縮小 (+ / -)
+      if (key === '+' || key === '=') setScaleValue(parseFloat(scaleSlider.value) + 0.05);
+      if (key === '-' || key === '_') setScaleValue(parseFloat(scaleSlider.value) - 0.05);
+
+      // 背景操作 (b, p, q)
+      if (key === 'b') bgColorPicker.click();
+      if (key === 'p') bgImgInput.click();
+      if (key === 'q') resetAll();
     });
   </script>
 </body>
