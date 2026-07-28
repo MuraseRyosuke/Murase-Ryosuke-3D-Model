@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>村瀨亮介 3D Model Preview</title>
+  <!-- Favicon 設定 -->
+  <link rel="icon" href="./favicon.ico" type="image/x-icon">
+  <link rel="shortcut icon" href="./favicon.ico" type="image/x-icon">
   <!-- Google model-viewer 読み込み -->
   <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
   <style>
@@ -64,7 +67,7 @@
       opacity: 1;
     }
 
-    /* 下部コントロールパネル（クリーン＆ミニマル・ダークグラスUI） */
+    /* 下部コントロールパネル（ダークグラスUI） */
     .controls-panel {
       position: absolute;
       bottom: 20px;
@@ -76,7 +79,7 @@
       align-items: center;
       gap: 6px;
       width: calc(100% - 24px);
-      max-width: 860px;
+      max-width: 980px;
       background: rgba(15, 18, 24, 0.85);
       padding: 10px 16px;
       border-radius: 20px;
@@ -109,6 +112,7 @@
       cursor: pointer;
       font-size: 11px;
       font-weight: 500;
+      text-decoration: none;
       transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
       white-space: nowrap;
       display: inline-flex;
@@ -265,6 +269,14 @@
 
       <button class="btn" id="resetBgBtn" title="既定の状態に戻す">↺</button>
     </div>
+
+    <div class="divider"></div>
+
+    <!-- 6. モデルダウンロード & GitHub リンク -->
+    <div class="group">
+      <button class="btn" id="downloadBtn" title="選択中のモデル (.glb) をダウンロード">📥 DL</button>
+      <a class="btn" href="https://github.com/MuraseRyosuke/Murase-Ryosuke-3D-Model" target="_blank" rel="noopener noreferrer" title="GitHub リポジトリを開く">🐙 GitHub</a>
+    </div>
   </div>
 
   <!-- 3Dビューワー -->
@@ -297,6 +309,7 @@
     const bgColorPicker = document.getElementById('bgColorPicker');
     const bgImgInput = document.getElementById('bgImgInput');
     const resetBgBtn = document.getElementById('resetBgBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
 
     const DEFAULT_SCALE = 0.5;
     const NORMAL_SPEED = '30deg';
@@ -318,7 +331,7 @@
       viewer.cameraTarget = `${posX.toFixed(2)}m ${posY.toFixed(2)}m ${posZ.toFixed(2)}m`;
     }
 
-    // カリング（画面外消去）無効化 ＆ ワイヤーフレーム表示制御
+    // カリング無効化 ＆ ワイヤーフレーム表示制御
     function configureSceneNodes(isMeshMode) {
       const symbols = Object.getOwnPropertySymbols(viewer);
       const sceneSymbol = symbols.find(s => s.description === 'scene') || Symbol.for('scene');
@@ -326,9 +339,7 @@
       if (scene) {
         scene.traverse((node) => {
           if (node.isMesh) {
-            // 遠くに配置しても消えないように視界カリングを無効化
             node.frustumCulled = false;
-
             if (node.material) {
               if (Array.isArray(node.material)) {
                 node.material.forEach(m => { m.wireframe = isMeshMode; });
@@ -566,7 +577,20 @@
 
     resetBgBtn.addEventListener('click', resetAll);
 
-    // 10. シークレット・キーボードショートカットハンドラ（非表示機能）
+    // 10. 現在選択中モデルのダウンロード処理
+    downloadBtn.addEventListener('click', () => {
+      const currentSrc = viewer.src;
+      if (!currentSrc) return;
+      const fileName = currentSrc.split('/').pop();
+      const a = document.createElement('a');
+      a.href = currentSrc;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    });
+
+    // 11. シークレット・キーボードショートカットハンドラ（非表示機能）
     window.addEventListener('keydown', (e) => {
       if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
 
