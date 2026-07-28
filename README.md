@@ -30,6 +30,7 @@
 
 ## 📦 同梱データ仕様 (Package Details)
 
+```text
 Murase-Ryosuke-3D-Model/
 ├── models/
 │   └── statue_bust/
@@ -39,6 +40,7 @@ Murase-Ryosuke-3D-Model/
 └── docs/
     ├── index.html        # プレビュービューワー
     └── favicon.ico       # ファビコン
+```
 
 ### 🗿 石膏胸像モデル (`/models/statue_bust/`)
 
