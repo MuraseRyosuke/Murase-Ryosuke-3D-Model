@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>村瀨亮介 3D Model Preview</title>
 
   <!-- ファビコン設定 -->
@@ -19,30 +19,30 @@
     :root {
       /* カラーパレット */
       --bg-default: #666666;
-      --panel-bg: rgba(15, 18, 24, 0.85);
-      --panel-border: rgba(255, 255, 255, 0.12);
+      --panel-bg: rgba(15, 18, 24, 0.88);
+      --panel-border: rgba(255, 255, 255, 0.15);
       
-      --btn-bg: rgba(255, 255, 255, 0.04);
-      --btn-bg-hover: rgba(255, 255, 255, 0.12);
-      --btn-border: rgba(255, 255, 255, 0.08);
-      --btn-border-hover: rgba(255, 255, 255, 0.25);
+      --btn-bg: rgba(255, 255, 255, 0.08);
+      --btn-bg-hover: rgba(255, 255, 255, 0.18);
+      --btn-border: rgba(255, 255, 255, 0.12);
+      --btn-border-hover: rgba(255, 255, 255, 0.3);
       
       --accent-blue: #2563eb;
       --accent-blue-border: #3b82f6;
-      --accent-blue-glow: rgba(37, 99, 235, 0.5);
+      --accent-blue-glow: rgba(37, 99, 235, 0.6);
       
       --accent-red: #e11d48;
       --accent-red-border: #f43f5e;
       --accent-red-glow: rgba(225, 29, 72, 0.7);
 
       --text-main: #ffffff;
-      --text-sub: #d1d5db;
-      --text-muted: rgba(255, 255, 255, 0.15);
+      --text-sub: #e5e7eb;
+      --text-muted: rgba(255, 255, 255, 0.2);
 
       /* エフェクト・レイアウト */
-      --panel-radius: 20px;
-      --btn-radius: 10px;
-      --blur-strength: 16px;
+      --panel-radius: 22px;
+      --btn-radius: 12px;
+      --blur-strength: 20px;
       --transition-fast: 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
@@ -53,6 +53,7 @@
       box-sizing: border-box;
       margin: 0;
       padding: 0;
+      touch-action: manipulation; /* ダブルタップズーム遅延の無効化 */
     }
 
     body {
@@ -71,7 +72,7 @@
     /* ==========================================================================
        3. ビューワー & エフェクトレイヤー
        ========================================================================== */
-    /* 背景リアカメラ映像 */
+    /* 背景用リアカメラ映像 */
     #cameraVideo {
       position: fixed;
       top: 0;
@@ -91,6 +92,34 @@
       --poster-color: transparent;
       transition: filter 0.3s ease;
       z-index: 1;
+    }
+
+    /* カスタム AR ボタン (画面右上に配置) */
+    .ar-fab-btn {
+      position: absolute;
+      top: 20px;
+      right: 16px;
+      z-index: 100;
+      background: rgba(37, 99, 235, 0.9);
+      color: var(--text-main);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      padding: 10px 18px;
+      border-radius: 30px;
+      font-size: 13px;
+      font-weight: 600;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all var(--transition-fast);
+    }
+
+    .ar-fab-btn:active {
+      transform: scale(0.95);
+      background: #1d4ed8;
     }
 
     /* ホログラム表示用 走査線オーバーレイ */
@@ -118,22 +147,22 @@
     }
 
     /* ==========================================================================
-       4. コントロールパネル UI (グラスモフィズム)
+       4. コントロールパネル UI
        ========================================================================== */
     .controls-panel {
       position: absolute;
-      bottom: 20px;
+      bottom: calc(20px + env(safe-area-inset-bottom, 0px));
       left: 50%;
       transform: translateX(-50%);
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
       width: calc(100% - 24px);
       max-width: 980px;
       background: var(--panel-bg);
-      padding: 10px 16px;
+      padding: 10px 14px;
       border-radius: var(--panel-radius);
       backdrop-filter: blur(var(--blur-strength));
       -webkit-backdrop-filter: blur(var(--blur-strength));
@@ -146,32 +175,41 @@
     .group {
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: 6px;
+      flex-shrink: 0;
     }
 
     .divider {
       width: 1px;
-      height: 18px;
+      height: 20px;
       background-color: var(--text-muted);
       margin: 0 2px;
+      flex-shrink: 0;
     }
 
-    /* ボタン共通スタイル */
+    /* ボタン共通スタイル（タッチ領域の大型化） */
     .btn {
       background: var(--btn-bg);
       color: var(--text-sub);
       border: 1px solid var(--btn-border);
-      padding: 6px 11px;
+      min-height: 38px;
+      padding: 6px 14px;
       border-radius: var(--btn-radius);
       cursor: pointer;
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 500;
       text-decoration: none;
       transition: all var(--transition-fast);
       white-space: nowrap;
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 4px;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn:active {
+      transform: scale(0.96);
     }
 
     .btn:hover {
@@ -201,15 +239,17 @@
     /* スライダー要素 */
     .scale-label {
       color: var(--text-sub);
-      font-size: 11px;
+      font-size: 12px;
       display: flex;
       align-items: center;
-      gap: 5px;
+      gap: 6px;
       white-space: nowrap;
+      padding: 0 4px;
     }
 
     .scale-slider {
-      width: 65px;
+      width: 70px;
+      height: 24px;
       accent-color: var(--accent-blue);
       cursor: pointer;
     }
@@ -235,40 +275,78 @@
     }
 
     /* ==========================================================================
-       5. アニメーション & モバイル対応
+       5. アニメーション & スマホ向け最適化
        ========================================================================== */
     @keyframes pulse {
       0% { transform: scale(1); }
       100% { transform: scale(1.05); }
     }
 
-    @media (max-width: 600px) {
+    /* スマホ画面向けスライドパネルレイアウト */
+    @media (max-width: 640px) {
       .controls-panel {
-        bottom: 10px;
+        bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+        width: calc(100% - 16px);
         padding: 8px 10px;
-        gap: 4px;
-        border-radius: 16px;
+        gap: 8px;
+        justify-content: flex-start;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none; /* Firefoxスクロールバー非表示 */
       }
-      .divider {
-        display: none;
+
+      .controls-panel::-webkit-scrollbar {
+        display: none; /* Chrome/Safariスクロールバー非表示 */
       }
+
       .btn {
-        padding: 5px 8px;
-        font-size: 10px;
+        min-height: 40px;
+        padding: 8px 14px;
+        font-size: 13px;
       }
+
       .scale-slider {
-        width: 50px;
+        width: 60px;
+      }
+
+      .ar-fab-btn {
+        top: 14px;
+        right: 14px;
+        padding: 10px 16px;
+        font-size: 13px;
       }
     }
   </style>
 </head>
 <body>
 
-  <!-- 背景用リアカメラビデオ素 -->
+  <!-- 背景用リアカメラビデオ要素 -->
   <video id="cameraVideo" autoplay playsinline muted></video>
 
   <!-- ホログラムモード用エフェクトオーバーレイ -->
   <div id="holoOverlay" class="holo-overlay"></div>
+
+  <!-- 3Dモデルビューワー -->
+  <model-viewer 
+    id="viewer"
+    src="./murase_statue_bust_15k_standard.glb" 
+    alt="村瀨亮介 3D Model Preview" 
+    scale="0.5 0.5 0.5"
+    camera-orbit="90deg 75deg auto"
+    camera-target="0m 0m 0m"
+    auto-rotate 
+    rotation-per-second="30deg"
+    camera-controls 
+    shadow-intensity="1"
+    ar
+    ar-modes="webxr scene-viewer quick-look">
+
+    <!-- カスタム AR ボタン (Google model-viewer slot) -->
+    <button slot="ar-button" class="ar-fab-btn">
+      👓 AR表示
+    </button>
+  </model-viewer>
 
   <!-- 下部コントロールパネルUI -->
   <div class="controls-panel">
@@ -334,22 +412,6 @@
       <a class="btn" href="https://github.com/MuraseRyosuke/Murase-Ryosuke-3D-Model" target="_blank" rel="noopener noreferrer" title="GitHub リポジトリを開く">🐙 GitHub</a>
     </div>
   </div>
-
-  <!-- 3Dモデルビューワー -->
-  <model-viewer 
-    id="viewer"
-    src="./murase_statue_bust_15k_standard.glb" 
-    alt="村瀨亮介 3D Model Preview" 
-    scale="0.5 0.5 0.5"
-    camera-orbit="90deg 75deg auto"
-    camera-target="0m 0m 0m"
-    auto-rotate 
-    rotation-per-second="30deg"
-    camera-controls 
-    shadow-intensity="1"
-    ar
-    ar-modes="webxr scene-viewer quick-look">
-  </model-viewer>
 
   <!-- スクリプト制御ロジック -->
   <script>
@@ -543,7 +605,7 @@
         DOM.viewer.scale = `${clamped} ${clamped} ${clamped}`;
       };
 
-      /** カメラ機能（背景パルスルー）の開始 / 停止 */
+      /** カメラ機能（背景パススルー）の開始 / 停止 */
       const startCamera = async () => {
         try {
           STATE.cameraStream = await navigator.mediaDevices.getUserMedia({
