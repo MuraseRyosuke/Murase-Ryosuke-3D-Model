@@ -17,7 +17,6 @@
        1. デザインシステム & CSS変数定義
        ========================================================================== */
     :root {
-      /* カラーパレット */
       --bg-default: #666666;
       --panel-bg: rgba(15, 18, 24, 0.88);
       --panel-border: rgba(255, 255, 255, 0.15);
@@ -35,25 +34,23 @@
       --accent-red-border: #f43f5e;
       --accent-red-glow: rgba(225, 29, 72, 0.7);
 
+      --gt-green: #34d399; /* GT7 良好インジケータ色 */
+
       --text-main: #ffffff;
       --text-sub: #e5e7eb;
-      --text-muted: rgba(255, 255, 255, 0.2);
+      --text-muted: rgba(255, 255, 255, 0.4);
 
-      /* エフェクト・レイアウト */
       --panel-radius: 22px;
       --btn-radius: 12px;
       --blur-strength: 20px;
       --transition-fast: 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    /* ==========================================================================
-       2. 基本スタイル & リセット
-       ========================================================================== */
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      touch-action: manipulation; /* ダブルタップズーム遅延の無効化 */
+      touch-action: manipulation;
     }
 
     body {
@@ -63,15 +60,12 @@
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
       overflow: hidden;
       user-select: none;
       transition: background-color 0.3s ease;
     }
 
-    /* ==========================================================================
-       3. ビューワー & エフェクトレイヤー
-       ========================================================================== */
     /* 背景用リアカメラ映像 */
     #cameraVideo {
       position: fixed;
@@ -94,7 +88,197 @@
       z-index: 1;
     }
 
-    /* カスタム AR ボタン (画面右上に配置) */
+    /* ==========================================================================
+       2. GT7 / スーパーフォーミュラ風 レーシングスペックUI (左側)
+       ========================================================================== */
+    .gt-spec-overlay {
+      position: absolute;
+      top: 24px;
+      left: 28px;
+      z-index: 20;
+      max-width: 320px;
+      color: var(--text-main);
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.85);
+      opacity: 1;
+      transform: translateX(0);
+      /* フェードイン・フェードアウト用トランジション */
+      transition: opacity 1s cubic-bezier(0.16, 1, 0.3, 1), transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+      pointer-events: auto;
+    }
+
+    /* スマホ自動消去・トグル用クラス */
+    .gt-spec-overlay.is-hidden {
+      opacity: 0 !important;
+      transform: translateX(-24px) !important;
+      pointer-events: none !important;
+    }
+
+    /* フォーミュラ風 ブランドロゴバッジ */
+    .gt-formula-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      padding: 3px 8px;
+      border-radius: 4px;
+      margin-bottom: 8px;
+    }
+
+    .gt-country {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.85);
+      margin-bottom: 2px;
+      letter-spacing: 0.05em;
+    }
+
+    .gt-name-main {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      line-height: 1.2;
+      color: #ffffff;
+    }
+
+    .gt-name-sub {
+      font-size: 11px;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.6);
+      margin-top: 2px;
+    }
+
+    /* GT7風 カプセル PP バッジ */
+    .gt-pp-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      margin-bottom: 10px;
+      padding: 2px 10px;
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      background: rgba(0, 0, 0, 0.35);
+    }
+
+    /* GT7風 水平パーティングライン */
+    .gt-divider {
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0) 100%);
+      margin-bottom: 10px;
+    }
+
+    /* スペック項目グリッド */
+    .gt-spec-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 12px;
+    }
+
+    .gt-spec-row {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+    }
+
+    .gt-spec-label {
+      width: 68px;
+      color: rgba(255, 255, 255, 0.55);
+      font-size: 11px;
+      font-weight: 400;
+      flex-shrink: 0;
+    }
+
+    .gt-spec-val {
+      font-weight: 600;
+      color: #ffffff;
+      font-size: 12px;
+      letter-spacing: 0.02em;
+    }
+
+    .gt-spec-val span {
+      font-size: 10px;
+      font-weight: 400;
+      color: rgba(255, 255, 255, 0.7);
+      margin-left: 2px;
+    }
+
+    /* GT7風 メカニカル・コンディションランプ */
+    .gt-status-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .gt-status-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .gt-status-tag {
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .gt-status-icon {
+      font-size: 11px;
+    }
+
+    .gt-status-text {
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--gt-green);
+      letter-spacing: 0.04em;
+    }
+
+    /* モバイル向け 再表示トリガーボタン */
+    .gt-mobile-toggle-btn {
+      position: absolute;
+      top: 18px;
+      left: 16px;
+      z-index: 25;
+      background: rgba(15, 18, 24, 0.75);
+      color: var(--text-main);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      padding: 8px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      gap: 4px;
+      transition: all var(--transition-fast);
+    }
+
+    .gt-mobile-toggle-btn:active {
+      transform: scale(0.95);
+    }
+
+    /* ==========================================================================
+       3. ビューワーコントロール & ARボタン
+       ========================================================================== */
     .ar-fab-btn {
       position: absolute;
       top: 20px;
@@ -122,7 +306,6 @@
       background: #1d4ed8;
     }
 
-    /* ホログラム表示用 走査線オーバーレイ */
     .holo-overlay {
       position: absolute;
       top: 0;
@@ -171,7 +354,6 @@
       z-index: 10;
     }
 
-    /* グループ ＆ 区切り線 */
     .group {
       display: flex;
       align-items: center;
@@ -187,7 +369,6 @@
       flex-shrink: 0;
     }
 
-    /* ボタン共通スタイル（タッチ領域の大型化） */
     .btn {
       background: var(--btn-bg);
       color: var(--text-sub);
@@ -226,7 +407,6 @@
       box-shadow: 0 0 12px var(--accent-blue-glow);
     }
 
-    /* 高速回転（🎠）アクティブ時 */
     .btn.fast-active {
       color: var(--text-main);
       background: var(--accent-red);
@@ -236,7 +416,6 @@
       animation: pulse 1s infinite alternate;
     }
 
-    /* スライダー要素 */
     .scale-label {
       color: var(--text-sub);
       font-size: 12px;
@@ -254,7 +433,6 @@
       cursor: pointer;
     }
 
-    /* カラーピッカー隠し要素 */
     .color-picker-label {
       position: relative;
       overflow: hidden;
@@ -274,16 +452,25 @@
       display: none;
     }
 
-    /* ==========================================================================
-       5. アニメーション & スマホ向け最適化
-       ========================================================================== */
     @keyframes pulse {
       0% { transform: scale(1); }
       100% { transform: scale(1.05); }
     }
 
-    /* スマホ画面向けスライドパネルレイアウト */
+    /* ==========================================================================
+       5. スマホ向けレスポンシブ最適化
+       ========================================================================== */
     @media (max-width: 640px) {
+      .gt-spec-overlay {
+        top: 60px;
+        left: 20px;
+        max-width: 280px;
+      }
+
+      .gt-mobile-toggle-btn {
+        display: inline-flex;
+      }
+
       .controls-panel {
         bottom: calc(12px + env(safe-area-inset-bottom, 0px));
         width: calc(100% - 16px);
@@ -293,11 +480,11 @@
         flex-wrap: nowrap;
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
-        scrollbar-width: none; /* Firefoxスクロールバー非表示 */
+        scrollbar-width: none;
       }
 
       .controls-panel::-webkit-scrollbar {
-        display: none; /* Chrome/Safariスクロールバー非表示 */
+        display: none;
       }
 
       .btn {
@@ -327,6 +514,83 @@
   <!-- ホログラムモード用エフェクトオーバーレイ -->
   <div id="holoOverlay" class="holo-overlay"></div>
 
+  <!-- スマホ用 SPEC 再表示トグルボタン -->
+  <button id="gtToggleBtn" class="gt-mobile-toggle-btn">
+    ℹ️ SPEC
+  </button>
+
+  <!-- GT7 / フォーミュラ風 スペックオーバーレイ (左上配置) -->
+  <div id="gtSpecOverlay" class="gt-spec-overlay">
+    <!-- フォーミュラ風 カテゴリバッジ -->
+    <div class="gt-formula-badge">FORMULA SPEC</div>
+
+    <!-- 国旗 & 地域表示 -->
+    <div class="gt-country">
+      <span>🇯🇵</span>
+      <span>北海道 旭川 / ASAHIKAWA HOKKAIDO</span>
+    </div>
+
+    <!-- ネーム & モデル年式 -->
+    <div class="gt-name-main">村瀨亮介 '96</div>
+    <div class="gt-name-sub">Ryosuke MURASE / Single-Seater Humanoid</div>
+
+    <!-- GT7風 PP バッジ (PP 596.24) -->
+    <div class="gt-pp-badge">
+      PP 596.24
+    </div>
+
+    <!-- パーティングライン -->
+    <div class="gt-divider"></div>
+
+    <!-- スペック表 -->
+    <div class="gt-spec-list">
+      <div class="gt-spec-row">
+        <span class="gt-spec-label">車両乾燥重量</span>
+        <span class="gt-spec-val">87<span>kg</span></span>
+      </div>
+      <div class="gt-spec-row">
+        <span class="gt-spec-label">全高 (身長)</span>
+        <span class="gt-spec-val">172<span>cm</span></span>
+      </div>
+      <div class="gt-spec-row">
+        <span class="gt-spec-label">駆動形式</span>
+        <span class="gt-spec-val">MR<span>(ミッドシップ 2WD)</span></span>
+      </div>
+      <div class="gt-spec-row">
+        <span class="gt-spec-label">主要燃料</span>
+        <span class="gt-spec-val">カレー<span>(Curry & Spices)</span></span>
+      </div>
+      <div class="gt-spec-row">
+        <span class="gt-spec-label">総ポリゴン</span>
+        <span class="gt-spec-val" id="specPolyVal">15,000<span>Tris</span></span>
+      </div>
+    </div>
+
+    <!-- GT7風 メカニカル・コンディションインジケータ -->
+    <div class="gt-status-row">
+      <div class="gt-status-item">
+        <span class="gt-status-tag">PU</span>
+        <span class="gt-status-icon">⚙️</span>
+        <span class="gt-status-text">良好</span>
+      </div>
+      <div class="gt-status-item">
+        <span class="gt-status-tag">CHASSIS</span>
+        <span class="gt-status-icon">🛡️</span>
+        <span class="gt-status-text">良好</span>
+      </div>
+      <div class="gt-status-item">
+        <span class="gt-status-tag">ENERGY</span>
+        <span class="gt-status-icon">⚡</span>
+        <span class="gt-status-text">良好</span>
+      </div>
+      <div class="gt-status-item">
+        <span class="gt-status-tag">SYSTEM</span>
+        <span class="gt-status-icon">🟢</span>
+        <span class="gt-status-text">良好</span>
+      </div>
+    </div>
+  </div>
+
   <!-- 3Dモデルビューワー -->
   <model-viewer 
     id="viewer"
@@ -352,9 +616,9 @@
   <div class="controls-panel">
     <!-- 1. ポリゴン数精度切り替え -->
     <div class="group">
-      <button class="btn" data-src="./murase_statue_bust_500p_low.glb">500p</button>
-      <button class="btn active" data-src="./murase_statue_bust_15k_standard.glb">15k</button>
-      <button class="btn" data-src="./murase_statue_bust_70k_raw.glb">70k</button>
+      <button class="btn" data-src="./murase_statue_bust_500p_low.glb" data-poly="500">500p</button>
+      <button class="btn active" data-src="./murase_statue_bust_15k_standard.glb" data-poly="15,000">15k</button>
+      <button class="btn" data-src="./murase_statue_bust_70k_raw.glb" data-poly="70,000">70k</button>
     </div>
 
     <div class="divider"></div>
@@ -419,33 +683,39 @@
       'use strict';
 
       /* ==========================================================================
-         1. 定数 ＆ 設定パラメータ (CONFIG)
+         1. 設定 ＆ 定数
          ========================================================================== */
       const CONFIG = {
         DEFAULT_SCALE: 0.5,
         DEFAULT_BG_COLOR: '#666666',
         NORMAL_ROTATION_SPEED: '30deg',
         FAST_ROTATION_SPEED: '1440deg',
-        MOVE_STEP: 0.05 // WASD移動速度 (メートル)
+        MOVE_STEP: 0.05
       };
 
       /* ==========================================================================
-         2. アプリケーション状態 (STATE)
+         2. アプリケーション状態
          ========================================================================== */
+      const isMobileDevice = window.innerWidth <= 768 || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
       const STATE = {
         currentMode: 'normal',
         isFastRotating: false,
         isCameraActive: false,
         cameraStream: null,
         originalMaterials: [],
-        position: { x: 0, y: 0, z: 0 }
+        position: { x: 0, y: 0, z: 0 },
+        isMobile: isMobileDevice
       };
 
       /* ==========================================================================
-         3. DOM要素キャッシュ (DOM)
+         3. DOM要素キャッシュ
          ========================================================================== */
       const DOM = {
         viewer: document.getElementById('viewer'),
+        gtSpecOverlay: document.getElementById('gtSpecOverlay'),
+        gtToggleBtn: document.getElementById('gtToggleBtn'),
+        specPolyVal: document.getElementById('specPolyVal'),
         modelButtons: document.querySelectorAll('.controls-panel .group:first-child .btn'),
         modeButtons: document.querySelectorAll('#viewModeGroup .btn'),
         holoOverlay: document.getElementById('holoOverlay'),
@@ -461,16 +731,46 @@
       };
 
       /* ==========================================================================
-         4. ヘルパー関数 ＆ コアロジック
+         4. GT7スペック表示制御（モバイル環境の確実な自動フェードアウト）
          ========================================================================== */
+      let specFadeTimer = null;
 
-      /** 3D空間上のカメラターゲット（注目位置）を更新 */
+      const hideSpecOverlay = () => {
+        DOM.gtSpecOverlay.classList.add('is-hidden');
+      };
+
+      const showSpecOverlay = () => {
+        DOM.gtSpecOverlay.classList.remove('is-hidden');
+      };
+
+      // モバイル環境：開始3.5秒後に自動でふわっと消去
+      if (STATE.isMobile) {
+        specFadeTimer = setTimeout(() => {
+          hideSpecOverlay();
+        }, 3500);
+      }
+
+      // 「ℹ️ SPEC」ボタンによるトグル切替
+      DOM.gtToggleBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (DOM.gtSpecOverlay.classList.contains('is-hidden')) {
+          showSpecOverlay();
+          if (specFadeTimer) clearTimeout(specFadeTimer);
+          // 再表示後、4秒経過で再び自動消去
+          specFadeTimer = setTimeout(hideSpecOverlay, 4000);
+        } else {
+          hideSpecOverlay();
+        }
+      });
+
+      /* ==========================================================================
+         5. 3Dビューワー・カメラ・マテリアル制御
+         ========================================================================== */
       const updateCameraTarget = () => {
         const { x, y, z } = STATE.position;
         DOM.viewer.cameraTarget = `${x.toFixed(2)}m ${y.toFixed(2)}m ${z.toFixed(2)}m`;
       };
 
-      /** Three.jsシーンノードの走査（視界カリング無効化 ＆ ワイヤーフレーム切替） */
       const configureSceneNodes = (isMeshMode) => {
         const symbols = Object.getOwnPropertySymbols(DOM.viewer);
         const sceneSymbol = symbols.find(s => s.description === 'scene') || Symbol.for('scene');
@@ -479,7 +779,7 @@
         if (scene) {
           scene.traverse((node) => {
             if (node.isMesh) {
-              node.frustumCulled = false; // 遠距離配置時の描画消失を防止
+              node.frustumCulled = false;
               if (node.material) {
                 if (Array.isArray(node.material)) {
                   node.material.forEach(m => { m.wireframe = isMeshMode; });
@@ -492,7 +792,6 @@
         }
       };
 
-      /** 初回ロード時のマテリアル状態キャッシュ */
       const cacheOriginalMaterials = () => {
         if (!DOM.viewer.model) return;
         STATE.originalMaterials = DOM.viewer.model.materials.map(mat => ({
@@ -505,7 +804,6 @@
         }));
       };
 
-      /** 表示モード（標準 / ソリッド / ホログラム / メッシュ）の適用 */
       const applyViewMode = (mode) => {
         STATE.currentMode = mode;
         if (!DOM.viewer.model) return;
@@ -566,16 +864,20 @@
         });
       };
 
-      /** モデル精度のインデックス指定切り替え */
+      /** ポリゴン精度切替 ＆ スペック表ポリゴン値のリアルタイム同期 */
       const selectModelIndex = (index) => {
         if (DOM.modelButtons[index]) {
           DOM.modelButtons.forEach(btn => btn.classList.remove('active'));
           DOM.modelButtons[index].classList.add('active');
           DOM.viewer.src = DOM.modelButtons[index].getAttribute('data-src');
+
+          const polyCount = DOM.modelButtons[index].getAttribute('data-poly');
+          if (polyCount) {
+            DOM.specPolyVal.innerHTML = `${polyCount}<span>Tris</span>`;
+          }
         }
       };
 
-      /** 表示モードの切り替えボタン状態更新 */
       const selectMode = (mode) => {
         DOM.modeButtons.forEach(btn => {
           btn.classList.toggle('active', btn.getAttribute('data-mode') === mode);
@@ -583,7 +885,6 @@
         applyViewMode(mode);
       };
 
-      /** 高速回転（🎠）の開始 / 停止 */
       const startFastRotate = () => {
         STATE.isFastRotating = true;
         DOM.viewer.setAttribute('auto-rotate', '');
@@ -598,14 +899,12 @@
         DOM.fastRotateBtn.classList.remove('fast-active');
       };
 
-      /** スケール（サイズ）設定 */
       const setScaleValue = (val) => {
         const clamped = Math.min(Math.max(val, 0.1), 1.5);
         DOM.scaleSlider.value = clamped;
         DOM.viewer.scale = `${clamped} ${clamped} ${clamped}`;
       };
 
-      /** カメラ機能（背景パススルー）の開始 / 停止 */
       const startCamera = async () => {
         try {
           STATE.cameraStream = await navigator.mediaDevices.getUserMedia({
@@ -619,8 +918,7 @@
           DOM.cameraBtn.classList.add('active');
           STATE.isCameraActive = true;
         } catch (err) {
-          alert('カメラの起動に失敗しました。アクセス権限を確認してください。');
-          console.error(err);
+          alert('カメラの起動に失敗しました。');
         }
       };
 
@@ -635,7 +933,6 @@
         STATE.isCameraActive = false;
       };
 
-      /** 既定状態への全身リセット */
       const resetAll = () => {
         stopCamera();
         document.body.style.backgroundImage = 'none';
@@ -656,41 +953,34 @@
         selectMode('normal');
       };
 
-      /** 選択中モデルのローカル保存（DL） */
       const downloadCurrentModel = () => {
         const currentSrc = DOM.viewer.src;
         if (!currentSrc) return;
-
         const fileName = currentSrc.split('/').pop();
-        const anchor = document.createElement('a');
-        anchor.href = currentSrc;
-        anchor.download = fileName;
-        document.body.appendChild(anchor);
-        anchor.click();
-        document.body.removeChild(anchor);
+        const a = document.createElement('a');
+        a.href = currentSrc;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
       };
 
       /* ==========================================================================
-         5. イベントリスナー登録
+         6. イベントリスナー登録
          ========================================================================== */
-
-      // 3Dモデルデータロード完了イベント
       DOM.viewer.addEventListener('load', () => {
         cacheOriginalMaterials();
         applyViewMode(STATE.currentMode);
       });
 
-      // 精度切り替えボタン
       DOM.modelButtons.forEach((btn, idx) => {
         btn.addEventListener('click', () => selectModelIndex(idx));
       });
 
-      // 表示モード切り替えボタン
       DOM.modeButtons.forEach((btn) => {
         btn.addEventListener('click', () => selectMode(btn.getAttribute('data-mode')));
       });
 
-      // 通常自動回転トグル
       DOM.toggleRotateBtn.addEventListener('click', () => {
         if (DOM.viewer.hasAttribute('auto-rotate')) {
           DOM.viewer.removeAttribute('auto-rotate');
@@ -702,31 +992,26 @@
         }
       });
 
-      // 高速回転（🎠）トグル
       DOM.fastRotateBtn.addEventListener('click', () => {
         if (STATE.isFastRotating) stopFastRotate();
         else startFastRotate();
       });
 
-      // スケールスライダー
       DOM.scaleSlider.addEventListener('input', (e) => {
         setScaleValue(parseFloat(e.target.value));
       });
 
-      // リアカメラボタン
       DOM.cameraBtn.addEventListener('click', async () => {
         if (STATE.isCameraActive) stopCamera();
         else await startCamera();
       });
 
-      // カラーピッカー
       DOM.bgColorPicker.addEventListener('input', (e) => {
         stopCamera();
         document.body.style.backgroundImage = 'none';
         document.body.style.backgroundColor = e.target.value;
       });
 
-      // 背景画像アップロード
       DOM.bgImgInput.addEventListener('change', (e) => {
         stopCamera();
         const file = e.target.files[0];
@@ -736,14 +1021,11 @@
         }
       });
 
-      // 全リセットボタン
       DOM.resetBgBtn.addEventListener('click', resetAll);
-
-      // モデルダウンロードボタン
       DOM.downloadBtn.addEventListener('click', downloadCurrentModel);
 
       /* ==========================================================================
-         6. シークレット・キーボードショートカットハンドラ
+         7. シークレット・キーボードショートカット
          ========================================================================== */
       window.addEventListener('keydown', (e) => {
         if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
@@ -752,7 +1034,6 @@
         const orbit = DOM.viewer.getCameraOrbit();
         const theta = orbit ? orbit.theta : Math.PI / 2;
 
-        // WASD: カメラ視点に追従した3D位置移動（前後左右）
         if (key === 'w') {
           STATE.position.x += Math.sin(theta) * CONFIG.MOVE_STEP;
           STATE.position.z += Math.cos(theta) * CONFIG.MOVE_STEP;
@@ -774,7 +1055,6 @@
           updateCameraTarget();
         }
 
-        // ↑↓: 上下高さ移動
         if (e.key === 'ArrowUp') {
           STATE.position.y -= CONFIG.MOVE_STEP;
           updateCameraTarget();
@@ -784,26 +1064,21 @@
           updateCameraTarget();
         }
 
-        // ポリゴン精度切り替え (1, 2, 3)
         if (key === '1') selectModelIndex(0);
         if (key === '2') selectModelIndex(1);
         if (key === '3') selectModelIndex(2);
 
-        // 表示モード (n: 標準, r: ソリッド, h: ホログラム, m: メッシュ)
         if (key === 'n') selectMode('normal');
         if (key === 'r') selectMode('solid');
         if (key === 'h') selectMode('hologram');
         if (key === 'm') selectMode('mesh');
 
-        // 回転制御 (l: 通常回転, c: 高速回転)
         if (key === 'l') DOM.toggleRotateBtn.click();
         if (key === 'c') DOM.fastRotateBtn.click();
 
-        // スケール変更 (+ / -)
         if (key === '+' || key === '=') setScaleValue(parseFloat(DOM.scaleSlider.value) + 0.05);
         if (key === '-' || key === '_') setScaleValue(parseFloat(DOM.scaleSlider.value) - 0.05);
 
-        // 環境操作 (b: カラーピッカー, p: 画像読込, q: リセット)
         if (key === 'b') DOM.bgColorPicker.click();
         if (key === 'p') DOM.bgImgInput.click();
         if (key === 'q') resetAll();
