@@ -256,27 +256,25 @@
     }
 
     /* ==========================================================================
-       3. GT風 トースト演出
+       3. GT7風 通知テキスト演出 (ボックス全廃・字幕風)
        ========================================================================== */
     .gt-toast {
       position: absolute;
-      bottom: 115px;
+      bottom: 100px;
       left: 50%;
-      transform: translateX(-50%) translateY(10px);
-      background: rgba(15, 18, 24, 0.9);
+      transform: translateX(-50%) translateY(8px);
+      background: none;
+      border: none;
+      box-shadow: none;
       color: #ffffff;
-      border: 1px solid var(--gt-orange-border);
-      padding: 8px 20px;
-      border-radius: 30px;
-      font-size: 13px;
+      padding: 0;
+      font-size: 15px;
       font-weight: 600;
-      letter-spacing: 0.06em;
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 12px var(--gt-orange-glow);
+      letter-spacing: 0.12em;
+      text-shadow: 0 2px 12px rgba(0, 0, 0, 0.95), 0 0 8px rgba(0, 0, 0, 0.8);
       pointer-events: none;
       opacity: 0;
-      transition: opacity 0.4s ease, transform 0.4s ease;
+      transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
       z-index: 40;
       white-space: nowrap;
     }
@@ -287,7 +285,7 @@
     }
 
     /* ==========================================================================
-       4. GTガレージ下部メニューバー
+       4. GTガレージ下部メニューバー (ザブトングラデーション拡張)
        ========================================================================== */
     .gt-garage-bottom {
       position: fixed;
@@ -295,8 +293,9 @@
       left: 0;
       width: 100%;
       z-index: 50;
-      background: linear-gradient(180deg, transparent 0%, rgba(10, 12, 16, 0.75) 25%, rgba(5, 7, 10, 0.98) 100%);
-      padding-top: 10px;
+      /* ザブトンとしてグラデーションを上部に広げ、文字の視認性を確保 */
+      background: linear-gradient(180deg, transparent 0%, rgba(10, 12, 16, 0.5) 15%, rgba(6, 8, 12, 0.9) 50%, rgba(2, 3, 5, 0.98) 100%);
+      padding-top: 24px;
       padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
       display: flex;
       flex-direction: column;
@@ -306,7 +305,7 @@
 
     /* サブメニュー (モバイル横スクロール対応) */
     .gt-sub-bar {
-      margin-bottom: 10px;
+      margin-bottom: 12px;
       background: rgba(22, 26, 34, 0.94);
       border: 1px solid rgba(255, 255, 255, 0.2);
       border-radius: 20px;
@@ -382,7 +381,7 @@
       100% { transform: scale(1.05); }
     }
 
-    /* カラーピッカー用インプット (透明に親要素全体を覆うことで正確な位置にポップアップ) */
+    /* カラーピッカー用インプット */
     .gt-color-picker-input {
       position: absolute;
       top: 0;
@@ -473,20 +472,6 @@
       white-space: nowrap;
     }
 
-    /* 図鑑の通知バッジ (423) */
-    .gt-badge {
-      position: absolute;
-      top: -4px;
-      right: -8px;
-      background: var(--gt-orange);
-      color: #ffffff;
-      font-size: 9px;
-      font-weight: 800;
-      padding: 1px 5px;
-      border-radius: 10px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
-    }
-
     /* スライダー装飾 */
     .gt-slider {
       width: 110px;
@@ -574,6 +559,11 @@
       .gt-menu-label {
         font-size: 10px;
       }
+
+      .gt-toast {
+        bottom: 95px;
+        font-size: 14px;
+      }
     }
   </style>
 </head>
@@ -590,7 +580,7 @@
     ℹ️ SPEC
   </button>
 
-  <!-- GT7風 トースト演出 -->
+  <!-- GT7風 トースト演出 (ボックス無しの字幕風テキスト) -->
   <div id="gtToast" class="gt-toast">モデルを切り替えました</div>
 
   <!-- GT / フォーミュラ風 スペックオーバーレイ (左上配置) -->
@@ -680,7 +670,7 @@
 
   <!-- ==========================================================================
        GTスタイル ガレージ下部メニューバー
-       ========================================================================== */ -->
+       ========================================================================== -->
   <div class="gt-garage-bottom">
 
     <!-- サブメニュー 1: モデル (500p / 15k / 70k) -->
@@ -729,17 +719,17 @@
       <input type="range" id="scaleSlider" class="gt-slider" min="0.1" max="1.5" step="0.05" value="0.5">
     </div>
 
-    <!-- メインメニューアイコンバー -->
+    <!-- メインメニューアイコンバー (初期状態はすべて非選択) -->
     <div class="gt-main-menu">
-      <!-- 1. モデル -->
-      <button class="gt-menu-item active" data-sub="subSwitch">
+      <!-- 1. モデル (3Dキューブアイコン) -->
+      <button class="gt-menu-item" data-sub="subSwitch">
         <div class="gt-menu-icon">
-          <svg viewBox="0 0 24 24"><path d="m21 2-2 2m-1.5 1.5L14 9l-1.5-1.5L11 9l-1.5-1.5L8 9l-2-2a5 5 0 1 0-4 4l9.5 9.5a2.12 2.12 0 0 0 3 0l6.5-6.5a2.12 2.12 0 0 0 0-3L21 2z"/></svg>
+          <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
         </div>
         <span class="gt-menu-label">モデル</span>
       </button>
 
-      <!-- 2. セッティング -->
+      <!-- 2. セッティング (スパナ/設定アイコン) -->
       <button class="gt-menu-item" data-sub="subSetting">
         <div class="gt-menu-icon">
           <svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
@@ -747,7 +737,7 @@
         <span class="gt-menu-label">セッティング</span>
       </button>
 
-      <!-- 3. ビュー -->
+      <!-- 3. ビュー (360°回転アイコン) -->
       <button class="gt-menu-item" data-sub="subView">
         <div class="gt-menu-icon">
           <svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
@@ -755,7 +745,7 @@
         <span class="gt-menu-label">ビュー</span>
       </button>
 
-      <!-- 4. スケープス -->
+      <!-- 4. スケープス (風景アイコン) -->
       <button class="gt-menu-item" data-sub="subScapes">
         <div class="gt-menu-icon">
           <svg viewBox="0 0 24 24"><path d="m8 3 4 8 5-5 5 11H2L8 3z"/><circle cx="17.5" cy="6.5" r="1.5"/></svg>
@@ -763,7 +753,7 @@
         <span class="gt-menu-label">スケープス</span>
       </button>
 
-      <!-- 5. ディテール -->
+      <!-- 5. ディテール (ズーム/スケールアイコン) -->
       <button class="gt-menu-item" data-sub="subScale">
         <div class="gt-menu-icon">
           <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
@@ -771,21 +761,20 @@
         <span class="gt-menu-label">ディテール</span>
       </button>
 
-      <!-- 6. ギフト (DL) -->
+      <!-- 6. ギフト (整ったプレゼントボックス) -->
       <button class="gt-menu-item" id="downloadBtn">
         <div class="gt-menu-icon">
-          <svg viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="14" rx="2"/><path d="M12 8v14"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"/></svg>
+          <svg viewBox="0 0 24 24"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
         </div>
         <span class="gt-menu-label">ギフト (DL)</span>
       </button>
 
-      <!-- 7. 図鑑 (GitHub) -->
+      <!-- 7. GitHub (公式GitHubオクトキャットアイコン) -->
       <a href="https://github.com/MuraseRyosuke/Murase-Ryosuke-3D-Model" target="_blank" rel="noopener noreferrer" class="gt-menu-item">
         <div class="gt-menu-icon">
-          <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-          <span class="gt-badge">423</span>
+          <svg viewBox="0 0 24 24"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
         </div>
-        <span class="gt-menu-label">図鑑</span>
+        <span class="gt-menu-label">GitHub</span>
       </a>
     </div>
   </div>
@@ -838,7 +827,7 @@
       };
 
       /* ==========================================================================
-         トースト通知演出
+         トースト通知演出 (字幕風)
          ========================================================================== */
       let toastTimer = null;
       const showToast = (msg) => {
@@ -1095,7 +1084,7 @@
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
-        showToast('ダウンロードを開始しました 🎁');
+        showToast('ダウンロードを開始しました');
       };
 
       /* ==========================================================================
