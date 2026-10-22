@@ -256,11 +256,11 @@
     }
 
     /* ==========================================================================
-       3. GT7風 通知テキスト演出 (ボックス全廃・字幕風)
+       3. GT7風 通知テキスト演出 (前面配置・字幕風・▼付き)
        ========================================================================== */
     .gt-toast {
-      position: absolute;
-      bottom: 100px;
+      position: fixed;
+      bottom: 160px;
       left: 50%;
       transform: translateX(-50%) translateY(8px);
       background: none;
@@ -271,12 +271,24 @@
       font-size: 15px;
       font-weight: 600;
       letter-spacing: 0.12em;
-      text-shadow: 0 2px 12px rgba(0, 0, 0, 0.95), 0 0 8px rgba(0, 0, 0, 0.8);
+      text-shadow: 0 2px 14px rgba(0, 0, 0, 0.95), 0 0 10px rgba(0, 0, 0, 0.9);
       pointer-events: none;
       opacity: 0;
       transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-      z-index: 40;
+      z-index: 100; /* 下部バー (z-index: 50) より確実に前面 */
       white-space: nowrap;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .gt-toast::after {
+      content: '▼';
+      font-size: 9px;
+      opacity: 0.7;
+      transform: scaleX(1.3);
     }
 
     .gt-toast.show {
@@ -285,7 +297,7 @@
     }
 
     /* ==========================================================================
-       4. GTガレージ下部メニューバー (ザブトングラデーション拡張)
+       4. GTガレージ下部メニューバー
        ========================================================================== */
     .gt-garage-bottom {
       position: fixed;
@@ -293,7 +305,6 @@
       left: 0;
       width: 100%;
       z-index: 50;
-      /* ザブトンとしてグラデーションを上部に広げ、文字の視認性を確保 */
       background: linear-gradient(180deg, transparent 0%, rgba(10, 12, 16, 0.5) 15%, rgba(6, 8, 12, 0.9) 50%, rgba(2, 3, 5, 0.98) 100%);
       padding-top: 24px;
       padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
@@ -360,7 +371,6 @@
       color: #ffffff;
     }
 
-    /* GT1 オレンジアクティブ状態 */
     .gt-sub-btn.active {
       background: var(--gt-orange);
       border-color: var(--gt-orange-border);
@@ -459,7 +469,6 @@
       transition: all var(--transition-fast);
     }
 
-    /* アクティブ時のオレンジ発光 */
     .gt-menu-item.active .gt-menu-icon svg {
       stroke: var(--gt-orange);
       filter: drop-shadow(0 0 8px var(--gt-orange-glow));
@@ -561,7 +570,7 @@
       }
 
       .gt-toast {
-        bottom: 95px;
+        bottom: calc(145px + env(safe-area-inset-bottom, 0px));
         font-size: 14px;
       }
     }
@@ -580,7 +589,7 @@
     ℹ️ SPEC
   </button>
 
-  <!-- GT7風 トースト演出 (ボックス無しの字幕風テキスト) -->
+  <!-- GT7風 トースト演出 (ボックス無しの字幕風テキスト・前面配置) -->
   <div id="gtToast" class="gt-toast">モデルを切り替えました</div>
 
   <!-- GT / フォーミュラ風 スペックオーバーレイ (左上配置) -->
@@ -761,7 +770,7 @@
         <span class="gt-menu-label">ディテール</span>
       </button>
 
-      <!-- 6. ギフト (整ったプレゼントボックス) -->
+      <!-- 6. ギフト (プレゼントボックス) -->
       <button class="gt-menu-item" id="downloadBtn">
         <div class="gt-menu-icon">
           <svg viewBox="0 0 24 24"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
@@ -769,7 +778,7 @@
         <span class="gt-menu-label">ギフト (DL)</span>
       </button>
 
-      <!-- 7. GitHub (公式GitHubオクトキャットアイコン) -->
+      <!-- 7. GitHub (公式マーク) -->
       <a href="https://github.com/MuraseRyosuke/Murase-Ryosuke-3D-Model" target="_blank" rel="noopener noreferrer" class="gt-menu-item">
         <div class="gt-menu-icon">
           <svg viewBox="0 0 24 24"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
@@ -827,7 +836,7 @@
       };
 
       /* ==========================================================================
-         トースト通知演出 (字幕風)
+         トースト通知演出 (字幕風・最前面)
          ========================================================================== */
       let toastTimer = null;
       const showToast = (msg) => {
@@ -1174,7 +1183,7 @@
         }
         if (key === 'd') {
           STATE.position.x -= Math.cos(theta) * CONFIG.MOVE_STEP;
-          STATE.position.z += Math.sin(theta) * CONFIG.MOVE_STEP;
+          STATE.position.z -= Math.sin(theta) * CONFIG.MOVE_STEP;
           updateCameraTarget();
         }
 
